@@ -1,6 +1,25 @@
-async function loadMenu() {
-  const res = await fetch('menu.json');
-  const menu = await res.json();
+import menu from './menu.js';
+import * as caseConverter from './tools/caseConverter.js';
+import * as textLength from './tools/textLength.js';
+import * as urlEncoder from './tools/urlEncoder.js';
+import * as base64 from './tools/base64.js';
+import * as jsonFormatter from './tools/jsonFormatter.js';
+import * as baseConverter from './tools/baseConverter.js';
+import * as timestamp from './tools/timestamp.js';
+import * as colorConverter from './tools/colorConverter.js';
+
+const modules = {
+  caseConverter,
+  textLength,
+  urlEncoder,
+  base64,
+  jsonFormatter,
+  baseConverter,
+  timestamp,
+  colorConverter,
+};
+
+function loadMenu() {
   const list = document.getElementById('menu');
   menu.forEach(cat => {
     const li = document.createElement('li');
@@ -14,7 +33,7 @@ async function loadMenu() {
     li.appendChild(ul);
     list.appendChild(li);
   });
-  await loadAllTools(menu);
+  loadAllTools(menu);
 }
 
 function filterMenu(term) {
@@ -28,34 +47,25 @@ function filterMenu(term) {
   });
 }
 
-
-async function loadAllTools(menu) {
+function loadAllTools(menu) {
   const content = document.getElementById('content');
   content.innerHTML = '';
-  for (const cat of menu) {
-    for (const child of cat.children) {
+  menu.forEach(cat => {
+    cat.children.forEach(child => {
       const section = document.createElement('section');
       section.id = `tool-${child.tool}`;
       section.dataset.title = child.title;
       content.appendChild(section);
-      const module = await import(`./tools/${child.tool}.js`);
-      module.render(section);
-    }
-  }
+      const module = modules[child.tool];
+      if (module && module.render) {
+        module.render(section);
+      }
+    });
+  });
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  loadMenu().then(() => {
-    document.querySelectorAll('#menu').forEach(node => {
-      node.addEventListener('click', e => {
-        const link = e.target.closest('a[data-tool]');
-        if (link) {
-          // allow default anchor behavior to jump to section
-        }
-      });
-    });
-  });
-
+  loadMenu();
   document.getElementById('search').addEventListener('input', e => {
     filterMenu(e.target.value);
   });
