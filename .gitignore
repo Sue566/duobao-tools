@@ -7,3 +7,4 @@
 # 测试覆盖率等临时文件
 coverage/
 .tmp/
+.idea/
