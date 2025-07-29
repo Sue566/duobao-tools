@@ -6,13 +6,16 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <aside>
-    <input id="search" placeholder="搜索工具" />
-    <ul id="menu"></ul>
-  </aside>
-  <main>
-    <div id="content"></div>
-  </main>
+  <header>多宝工具箱</header>
+  <div class="container">
+    <aside>
+      <input id="search" placeholder="搜索工具" />
+      <ul id="menu"></ul>
+    </aside>
+    <main>
+      <div id="content"></div>
+    </main>
+  </div>
   <script>window.tools = {};</script>
   <script src="menu.js"></script>
   <script src="tools/caseConverter.js"></script>
@@ -21,6 +24,7 @@
   <script src="tools/base64.js"></script>
   <script src="tools/jsonFormatter.js"></script>
   <script src="tools/baseConverter.js"></script>
+  <script src="tools/rmbUppercase.js"></script>
   <script src="tools/timestamp.js"></script>
   <script src="tools/colorConverter.js"></script>
   <script src="main.js"></script>

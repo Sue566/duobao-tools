@@ -12,7 +12,8 @@ window.menu = [
   {
     title: '数值转换',
     children: [
-      { title: '进制转换', tool: 'baseConverter' }
+      { title: '进制转换', tool: 'baseConverter' },
+      { title: '数字转中文大写', tool: 'rmbUppercase' }
     ]
   },
   {
