@@ -1,14 +1,16 @@
-export function render(target) {
-  target.innerHTML = `
-    <h2>\u989c\u8272\u8f6c\u6362</h2>
-    <div class="convert-row">
-      <input id="color-input" placeholder="#RRGGBB \u6216 r,g,b" />
-      <button onclick="toHex()">\u8f6c Hex</button>
-      <button onclick="toRgb()">\u8f6c RGB</button>
-    </div>
-    <input id="color-output" placeholder="\u7ed3\u679c" readonly />
-  `;
-}
+window.tools.colorConverter = {
+  render(target) {
+    target.innerHTML = `
+      <h2>\u989c\u8272\u8f6c\u6362</h2>
+      <div class="convert-row">
+        <input id="color-input" placeholder="#RRGGBB \u6216 r,g,b" />
+        <button onclick="toHex()">\u8f6c Hex</button>
+        <button onclick="toRgb()">\u8f6c RGB</button>
+      </div>
+      <input id="color-output" placeholder="\u7ed3\u679c" readonly />
+    `;
+  }
+};
 
 window.toHex = function() {
   const val = document.getElementById('color-input').value.trim();

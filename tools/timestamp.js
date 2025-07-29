@@ -1,14 +1,16 @@
-export function render(target) {
-  target.innerHTML = `
-    <h2>时间戳转换</h2>
-    <div class="convert-row">
-      <input id="ts-input" placeholder="时间戳或日期字符串" />
-      <button onclick="toTimestamp()">转时间戳</button>
-      <button onclick="fromTimestamp()">转日期</button>
-    </div>
-    <input id="ts-output" placeholder="结果" readonly />
-  `;
-}
+window.tools.timestamp = {
+  render(target) {
+    target.innerHTML = `
+      <h2>时间戳转换</h2>
+      <div class="convert-row">
+        <input id="ts-input" placeholder="时间戳或日期字符串" />
+        <button onclick="toTimestamp()">转时间戳</button>
+        <button onclick="fromTimestamp()">转日期</button>
+      </div>
+      <input id="ts-output" placeholder="结果" readonly />
+    `;
+  }
+};
 
 window.toTimestamp = function() {
   const val = document.getElementById('ts-input').value.trim();

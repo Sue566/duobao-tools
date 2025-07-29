@@ -1,4 +1,4 @@
-export default [
+window.menu = [
   {
     title: '文本处理',
     children: [

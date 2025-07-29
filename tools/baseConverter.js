@@ -1,8 +1,9 @@
-export function render(target) {
-  target.innerHTML = `
-    <h2>进制转换</h2>
-    <div class="convert-row">
-      <input id="number-input" placeholder="输入数字" />
+window.tools.baseConverter = {
+  render(target) {
+    target.innerHTML = `
+      <h2>进制转换</h2>
+      <div class="convert-row">
+        <input id="number-input" placeholder="输入数字" />
       <select id="from-base">
         <option value="10">10进制</option>
         <option value="2">2进制</option>
@@ -18,7 +19,8 @@ export function render(target) {
     </div>
     <input id="number-output" placeholder="输出结果" readonly />
   `;
-}
+  }
+};
 
 window.convertBase = function() {
   const val = document.getElementById('number-input').value.trim();
