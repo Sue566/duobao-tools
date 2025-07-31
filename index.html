@@ -1,32 +1,71 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <title>多宝工具箱</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多宝工具箱 - 实用在线工具集合</title>
+  <meta name="description" content="多宝工具箱是一个集合了各种实用在线工具的网站，帮助您提高工作效率和解决日常问题。">
+  <meta name="keywords" content="在线工具,工具箱,实用工具,开发工具,文本处理,编码转换,图片工具">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="static/css/theme.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
-  <header>多宝工具箱</header>
+  <header>
+    <div class="logo">
+      <i class="fa fa-cubes"></i> 多宝工具箱
+    </div>
+    <div class="search-box">
+      <i class="fa fa-search"></i>
+      <input type="text" id="search" placeholder="搜索工具..." />
+    </div>
+  </header>
+  
   <div class="container">
     <aside>
-      <input id="search" placeholder="搜索工具" />
       <ul id="menu"></ul>
     </aside>
+    
     <main>
       <div id="content"></div>
     </main>
   </div>
-  <script>window.tools = {};</script>
+  
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>关于多宝工具箱</h3>
+        <p>多宝工具箱是一个集合了各种实用在线工具的网站，旨在帮助用户提高工作效率和解决日常问题。</p>
+      </div>
+      <div class="footer-section">
+        <h3>快捷键</h3>
+        <ul class="shortcuts">
+          <li><kbd>Alt</kbd> + <kbd>/</kbd> 聚焦搜索框</li>
+          <li><kbd>Esc</kbd> 返回首页</li>
+          <li><kbd>Alt</kbd> + <kbd>T</kbd> 切换主题</li>
+          <li><kbd>Alt</kbd> + <kbd>S</kbd> 打开设置</li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>联系我们</h3>
+        <div class="social-links">
+          <a href="#" title="微信"><i class="fa fa-weixin"></i></a>
+          <a href="#" title="QQ"><i class="fa fa-qq"></i></a>
+          <a href="#" title="微博"><i class="fa fa-weibo"></i></a>
+          <a href="#" title="GitHub"><i class="fa fa-github"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2023 多宝工具箱 | 版本 1.0.0</p>
+    </div>
+  </footer>
+  
+  <!-- 加载脚本 -->
+  <script src="static/js/libs.js"></script>
   <script src="menu.js"></script>
-  <script src="tools/caseConverter.js"></script>
-  <script src="tools/textLength.js"></script>
-  <script src="tools/urlEncoder.js"></script>
-  <script src="tools/base64.js"></script>
-  <script src="tools/jsonFormatter.js"></script>
-  <script src="tools/baseConverter.js"></script>
-  <script src="tools/rmbUppercase.js"></script>
-  <script src="tools/timestamp.js"></script>
-  <script src="tools/colorConverter.js"></script>
   <script src="main.js"></script>
+  <script src="tools-loader.js"></script>
 </body>
 </html>

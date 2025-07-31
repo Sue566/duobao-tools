@@ -1,0 +1,255 @@
+/**
+ * 多宝工具箱 - 主题样式
+ */
+
+/* 浅色主题变量 */
+:root {
+  --primary-color: #4a6cf7;
+  --primary-color-dark: #3a5cd7;
+  --primary-color-light: #eef2ff;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #17a2b8;
+  --text-color: #333;
+  --text-muted: #6c757d;
+  --border-color: #e9ecef;
+  --card-bg: #fff;
+  --body-bg: #f8f9fa;
+  --header-bg: #fff;
+  --sidebar-bg: #fff;
+  --transition: all 0.3s ease;
+  --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 深色主题变量 */
+[data-theme="dark"] {
+  --primary-color: #4a6cf7;
+  --primary-color-dark: #3a5cd7;
+  --primary-color-light: #2a3b5c;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #17a2b8;
+  --text-color: #e9ecef;
+  --text-muted: #adb5bd;
+  --border-color: #343a40;
+  --card-bg: #2c3034;
+  --body-bg: #212529;
+  --header-bg: #2c3034;
+  --sidebar-bg: #2c3034;
+  --transition: all 0.3s ease;
+  --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 基础样式 */
+body {
+  background-color: var(--body-bg);
+  color: var(--text-color);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  transition: var(--transition);
+}
+
+/* 主题切换按钮 */
+.theme-toggle {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.theme-toggle button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+}
+
+.theme-toggle button:hover {
+  transform: rotate(30deg);
+}
+
+/* Toast 消息 */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1050;
+}
+
+.toast {
+  padding: 12px 20px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  box-shadow: var(--box-shadow);
+  display: flex;
+  align-items: center;
+  min-width: 250px;
+  max-width: 350px;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.toast i {
+  margin-right: 10px;
+}
+
+.toast.success {
+  border-left: 4px solid var(--success-color);
+}
+
+.toast.error {
+  border-left: 4px solid var(--danger-color);
+}
+
+.toast.warning {
+  border-left: 4px solid var(--warning-color);
+}
+
+.toast.info {
+  border-left: 4px solid var(--info-color);
+}
+
+/* 标签样式 */
+.tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 5px;
+}
+
+.tag-success {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.tag-warning {
+  background-color: var(--warning-color);
+  color: #212529;
+}
+
+.tag-info {
+  background-color: var(--info-color);
+  color: white;
+}
+
+/* 搜索结果提示 */
+.search-result {
+  background-color: var(--card-bg);
+  border-radius: 4px;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border-left: 4px solid var(--primary-color);
+  box-shadow: var(--box-shadow);
+}
+
+.search-result p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.search-result i {
+  margin-right: 10px;
+}
+
+/* 面包屑导航 */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.breadcrumb a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.breadcrumb .separator {
+  margin: 0 10px;
+  color: var(--text-muted);
+}
+
+.breadcrumb .current {
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+/* 工具卡片 */
+.tool-card {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  transition: var(--transition);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.tool-card:hover {
+  box-shadow: var(--box-shadow);
+  transform: translateY(-2px);
+}
+
+.tool-card-header {
+  padding: 15px;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.tool-card-header i {
+  margin-right: 8px;
+  color: var(--primary-color);
+}
+
+.tool-card-body {
+  padding: 15px;
+  flex-grow: 1;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.tool-card-footer {
+  padding: 15px;
+  border-top: 1px solid var(--border-color);
+  text-align: right;
+}
+
+.tool-link {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.tool-link:hover {
+  background-color: var(--primary-color-dark);
+}
+
+.tool-link i {
+  margin-left: 5px;
+}
