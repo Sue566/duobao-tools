@@ -44,7 +44,7 @@ function loadMenu() {
   });
   
   // 展开/折叠分类
-  document.querySelectorAll('.cat').forEach(cat => {
+  document.querySelectorAll('.cat').forEach((cat, index) => {
     cat.addEventListener('click', function(e) {
       // 阻止事件冒泡
       e.preventDefault();
@@ -52,6 +52,16 @@ function loadMenu() {
       
       const ul = this.nextElementSibling;
       if (!ul) return; // 防止空引用错误
+      
+      // 检查子菜单数量
+      const childCount = ul.querySelectorAll('li').length;
+      console.log('菜单:', this.textContent.trim(), '子菜单数量:', childCount);
+      
+      // 如果没有子菜单，不执行展开/折叠操作
+      if (childCount === 0) {
+        console.log('该菜单没有子菜单，跳过展开/折叠操作');
+        return;
+      }
       
       const isExpanded = ul.classList.contains('expanded');
       console.log('点击菜单:', this.textContent.trim(), '当前状态:', isExpanded ? '已展开' : '已折叠');
@@ -61,6 +71,8 @@ function loadMenu() {
         if (menu !== ul) {
           menu.style.maxHeight = '0px';
           menu.classList.remove('expanded');
+          menu.style.opacity = '0';
+          menu.style.visibility = 'hidden';
         }
       });
       
@@ -68,7 +80,7 @@ function loadMenu() {
       if (!isExpanded) {
         // 确保设置足够大的高度
         ul.classList.add('expanded');
-        ul.style.maxHeight = '5000px'; // 设置一个更大的值，确保所有子菜单都能显示
+        ul.style.maxHeight = '10000px'; // 设置一个更大的值，确保所有子菜单都能显示
         ul.style.opacity = '1';
         ul.style.visibility = 'visible';
         
@@ -76,10 +88,10 @@ function loadMenu() {
         setTimeout(() => {
           if (ul.classList.contains('expanded')) {
             const scrollHeight = ul.scrollHeight;
-            ul.style.maxHeight = (scrollHeight + 50) + 'px'; // 添加额外空间，防止内容被截断
+            ul.style.maxHeight = (scrollHeight + 100) + 'px'; // 添加更多额外空间，防止内容被截断
             console.log('展开菜单，高度:', scrollHeight, '设置高度:', ul.style.maxHeight);
           }
-        }, 100);
+        }, 200); // 增加延迟时间，确保DOM已完全渲染
       } else {
         ul.style.maxHeight = '0px';
         ul.classList.remove('expanded');
@@ -90,20 +102,24 @@ function loadMenu() {
     });
     
     // 默认展开第一个分类
-    if (cat === document.querySelector('.cat')) {
+    if (index === 0) {
       const ul = cat.nextElementSibling;
-      setTimeout(() => {
-        ul.classList.add('expanded');
-        ul.style.maxHeight = '2000px'; // 设置一个足够大的值
-        
+      if (ul) {
         setTimeout(() => {
-          if (ul.classList.contains('expanded')) {
-            const scrollHeight = ul.scrollHeight;
-            ul.style.maxHeight = scrollHeight + 'px';
-            console.log('默认展开第一个菜单，高度:', scrollHeight);
-          }
-        }, 50);
-      }, 100);
+          ul.classList.add('expanded');
+          ul.style.maxHeight = '10000px'; // 设置一个足够大的值
+          ul.style.opacity = '1';
+          ul.style.visibility = 'visible';
+          
+          setTimeout(() => {
+            if (ul.classList.contains('expanded')) {
+              const scrollHeight = ul.scrollHeight;
+              ul.style.maxHeight = (scrollHeight + 100) + 'px';
+              console.log('默认展开第一个菜单，高度:', scrollHeight);
+            }
+          }, 200);
+        }, 300); // 增加延迟时间，确保DOM已完全渲染
+      }
     }
   });
   
@@ -505,17 +521,26 @@ function filterMenu(term) {
     // 展开匹配的分类
     if (categoryHasMatch && term) {
       ul.classList.add('expanded');
+      ul.style.opacity = '1';
+      ul.style.visibility = 'visible';
+      
       // 确保设置足够大的高度
       setTimeout(() => {
         if (ul.classList.contains('expanded')) {
-          ul.style.maxHeight = '2000px'; // 先设置一个足够大的值
+          ul.style.maxHeight = '10000px'; // 先设置一个足够大的值
           setTimeout(() => {
             const scrollHeight = ul.scrollHeight;
-            ul.style.maxHeight = scrollHeight + 'px';
+            ul.style.maxHeight = (scrollHeight + 100) + 'px';
             console.log('搜索展开菜单，高度:', scrollHeight);
-          }, 50);
+          }, 100);
         }
-      }, 10);
+      }, 50);
+    } else if (!categoryHasMatch && term) {
+      // 如果该分类没有匹配项，确保它被折叠
+      ul.classList.remove('expanded');
+      ul.style.maxHeight = '0px';
+      ul.style.opacity = '0';
+      ul.style.visibility = 'hidden';
     }
   });
   
