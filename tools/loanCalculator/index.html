@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>贷款计算器</title>
+</head>
+<body>
+  <div class="tool-container" id="loan-calculator-tool">
+    <div class="tool-header">
+      <h2><i class="fa fa-money"></i> 贷款计算器</h2>
+      <p class="tool-description">计算贷款利息和还款计划，支持多种贷款类型、还款方式和提前还款计算。</p>
+    </div>
+    
+    <div class="loan-tabs">
+      <div class="tab-header">
+        <button class="tab-btn active" data-tab="basic">基础计算</button>
+        <button class="tab-btn" data-tab="combined">组合贷款</button>
+        <button class="tab-btn" data-tab="prepayment">提前还款</button>
+        <button class="tab-btn" data-tab="compare">方案比较</button>
+      </div>
+      
+      <div class="tab-content active" id="tab-basic">
+        <div class="loan-container">
+          <div class="loan-input-section">
+            <div class="form-group">
+              <label for="loan-type">贷款类型</label>
+              <select id="loan-type" class="form-control">
+                <option value="commercial">商业贷款</option>
+                <option value="housing">公积金贷款</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="loan-amount">贷款金额</label>
+              <div class="input-with-unit">
+                <input type="number" id="loan-amount" class="form-control" value="100000" min="1" step="1000" />
+                <span class="unit">元</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="loan-term">贷款期限</label>
+              <div class="input-with-unit">
+                <input type="number" id="loan-term" class="form-control" value="12" min="1" max="360" />
+                <select id="term-unit" class="form-control">
+                  <option value="month">月</option>
+                  <option value="year">年</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="interest-rate">年利率</label>
+              <div class="input-with-unit">
+                <input type="number" id="interest-rate" class="form-control" value="4.35" min="0.01" step="0.01" />
+                <span class="unit">%</span>
+                <button id="rate-reference" class="btn btn-sm"><i class="fa fa-info-circle"></i></button>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="rate-adjustment">利率调整</label>
+              <div class="input-with-unit">
+                <input type="number" id="rate-adjustment" class="form-control" value="0" step="0.01" />
+                <span class="unit">%</span>
+              </div>
+              <div class="form-text">基准利率基础上的上浮或下调，正数为上浮，负数为下调</div>
+            </div>
+        
+            <div class="form-group">
+              <label>还款方式</label>
+              <div class="repayment-options">
+                <div class="form-check">
+                  <input type="radio" name="repayment-method" id="method-equal-installment" value="equal-installment" checked />
+                  <label for="method-equal-installment">等额本息</label>
+                </div>
+                <div class="form-check">
+                  <input type="radio" name="repayment-method" id="method-equal-principal" value="equal-principal" />
+                  <label for="method-equal-principal">等额本金</label>
+                </div>
+                <div class="form-check">
+                  <input type="radio" name="repayment-method" id="method-interest-only" value="interest-only" />
+                  <label for="method-interest-only">先息后本</label>
+                </div>
+              </div>
+            </div>
+        
+            <div class="form-group">
+              <label>首次还款日期</label>
+              <input type="date" id="first-payment-date" class="form-control" />
+            </div>
+            
+            <div class="form-group">
+              <label>其他选项</label>
+              <div class="loan-options">
+                <div class="form-check">
+                  <input type="checkbox" id="include-tax" />
+                  <label for="include-tax">包含税费</label>
+                </div>
+                <div class="form-check">
+                  <input type="checkbox" id="include-insurance" />
+                  <label for="include-insurance">包含保险</label>
+                </div>
+              </div>
+            </div>
+            
+            <div id="tax-insurance-details" style="display: none;">
+              <div class="form-group">
+                <label for="tax-rate">契税税率</label>
+                <div class="input-with-unit">
+                  <input type="number" id="tax-rate" class="form-control" value="1" min="0" step="0.1" />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="insurance-rate">保险费率</label>
+                <div class="input-with-unit">
+                  <input type="number" id="insurance-rate" class="form-control" value="0.5" min="0" step="0.1" />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+            </div>
+        
+            <div class="loan-actions">
+              <button id="calculate-btn" class="btn btn-success"><i class="fa fa-calculator"></i> 计算</button>
+              <button id="clear-btn" class="btn btn-secondary"><i class="fa fa-trash-o"></i> 清空</button>
+              <button id="save-plan-btn" class="btn"><i class="fa fa-save"></i> 保存方案</button>
+            </div>
+          </div>
+      
+          <div class="loan-result-section">
+            <div class="result-header">
+              <h3>计算结果</h3>
+              <div class="result-actions">
+                <button id="export-btn" class="btn btn-sm"><i class="fa fa-download"></i> 导出还款计划</button>
+              </div>
+            </div>
+            
+            <div class="loan-summary" id="loan-summary"></div>
+            
+            <div class="loan-chart-container">
+              <div class="chart-type-selector">
+                <button class="chart-type-btn active" data-type="payment">还款构成</button>
+                <button class="chart-type-btn" data-type="balance">本金余额</button>
+                <button class="chart-type-btn" data-type="ratio">本息比例</button>
+              </div>
+              <canvas id="loan-chart"></canvas>
+            </div>
+        
+            <div class="loan-schedule-header">
+              <h3>还款计划</h3>
+              <div class="schedule-filter">
+                <label for="schedule-filter">显示:</label>
+                <select id="schedule-filter" class="form-control form-control-sm">
+                  <option value="all">全部</option>
+                  <option value="first-year">第一年</option>
+                  <option value="first-5-years">前5年</option>
+                  <option value="first-10">前10期</option>
+                  <option value="last-10">后10期</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="loan-schedule-container">
+              <table class="loan-schedule" id="loan-schedule">
+                <thead>
+                  <tr>
+                    <th>期数</th>
+                    <th>还款日期</th>
+                    <th>月供</th>
+                    <th>本金</th>
+                    <th>利息</th>
+                    <th>剩余本金</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="tab-combined">
+        <div class="combined-loan-container">
+          <div class="combined-loan-inputs">
+            <div class="commercial-loan-section">
+              <h3>商业贷款部分</h3>
+              
+              <div class="form-group">
+                <label for="commercial-amount">贷款金额</label>
+                <div class="input-with-unit">
+                  <input type="number" id="commercial-amount" class="form-control" value="500000" min="1" step="1000" />
+                  <span class="unit">元</span>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="commercial-term">贷款期限</label>
+                <div class="input-with-unit">
+                  <input type="number" id="commercial-term" class="form-control" value="30" min="1" max="30" />
+                  <span class="unit">年</span>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="commercial-rate">年利率</label>
+                <div class="input-with-unit">
+                  <input type="number" id="commercial-rate" class="form-control" value="4.35" min="0.01" step="0.01" />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="housing-loan-section">
+              <h3>公积金贷款部分</h3>
+              
+              <div class="form-group">
+                <label for="housing-amount">贷款金额</label>
+                <div class="input-with-unit">
+                  <input type="number" id="housing-amount" class="form-control" value="300000" min="1" step="1000" />
+                  <span class="unit">元</span>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="housing-term">贷款期限</label>
+                <div class="input-with-unit">
+                  <input type="number" id="housing-term" class="form-control" value="30" min="1" max="30" />
+                  <span class="unit">年</span>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="housing-rate">年利率</label>
+                <div class="input-with-unit">
+                  <input type="number" id="housing-rate" class="form-control" value="3.25" min="0.01" step="0.01" />
+                  <span class="unit">%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="combined-loan-options">
+              <div class="form-group">
+                <label>还款方式</label>
+                <div class="repayment-options">
+                  <div class="form-check">
+                    <input type="radio" name="combined-method" id="combined-equal-installment" value="equal-installment" checked />
+                    <label for="combined-equal-installment">等额本息</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="radio" name="combined-method" id="combined-equal-principal" value="equal-principal" />
+                    <label for="combined-equal-principal">等额本金</label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>首次还款日期</label>
+                <input type="date" id="combined-first-date" class="form-control" />
+              </div>
+              
+              <div class="combined-actions">
+                <button id="calculate-combined-btn" class="btn btn-success"><i class="fa fa-calculator"></i> 计算组合贷款</button>
+                <button id="clear-combined-btn" class="btn btn-secondary"><i class="fa fa-trash-o"></i> 清空</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="combined-loan-results">
+            <div class="result-header">
+              <h3>组合贷款计算结果</h3>
+              <div class="result-actions">
+                <button id="export-combined-btn" class="btn btn-sm"><i class="fa fa-download"></i> 导出还款计划</button>
+              </div>
+            </div>
+            
+            <div class="combined-summary" id="combined-summary"></div>
+            
+            <div class="combined-chart-container">
+              <canvas id="combined-chart"></canvas>
+            </div>
+            
+            <div class="combined-schedule-header">
+              <h3>组合贷款还款计划</h3>
+              <div class="schedule-filter">
+                <label for="combined-filter">显示:</label>
+                <select id="combined-filter" class="form-control form-control-sm">
+                  <option value="all">全部</option>
+                  <option value="first-year">第一年</option>
+                  <option value="first-5-years">前5年</option>
+                  <option value="first-10">前10期</option>
+                  <option value="last-10">后10期</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="combined-schedule-container">
+              <table class="loan-schedule" id="combined-schedule">
+                <thead>
+                  <tr>
+                    <th>期数</th>
+                    <th>还款日期</th>
+                    <th>商贷月供</th>
+                    <th>公积金月供</th>
+                    <th>总月供</th>
+                    <th>总本金</th>
+                    <th>总利息</th>
+                    <th>剩余本金</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="tab-prepayment">
+        <div class="prepayment-container">
+          <div class="prepayment-inputs">
+            <div class="form-group">
+              <label for="original-amount">原贷款金额</label>
+              <div class="input-with-unit">
+                <input type="number" id="original-amount" class="form-control" value="500000" min="1" step="1000" />
+                <span class="unit">元</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="original-term">原贷款期限</label>
+              <div class="input-with-unit">
+                <input type="number" id="original-term" class="form-control" value="30" min="1" />
+                <select id="original-term-unit" class="form-control">
+                  <option value="year">年</option>
+                  <option value="month">月</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="original-rate">原贷款年利率</label>
+              <div class="input-with-unit">
+                <input type="number" id="original-rate" class="form-control" value="4.35" min="0.01" step="0.01" />
+                <span class="unit">%</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="loan-start-date">贷款开始日期</label>
+              <input type="date" id="loan-start-date" class="form-control" />
+            </div>
+            
+            <div class="form-group">
+              <label for="already-paid">已还期数</label>
+              <div class="input-with-unit">
+                <input type="number" id="already-paid" class="form-control" value="12" min="0" />
+                <span class="unit">期</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="prepayment-amount">提前还款金额</label>
+              <div class="input-with-unit">
+                <input type="number" id="prepayment-amount" class="form-control" value="100000" min="1" step="1000" />
+                <span class="unit">元</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>提前还款方式</label>
+              <div class="prepayment-options">
+                <div class="form-check">
+                  <input type="radio" name="prepayment-method" id="method-reduce-term" value="reduce-term" checked />
+                  <label for="method-reduce-term">缩短贷款期限</label>
+                </div>
+                <div class="form-check">
+                  <input type="radio" name="prepayment-method" id="method-reduce-amount" value="reduce-amount" />
+                  <label for="method-reduce-amount">减少月供金额</label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>原还款方式</label>
+              <div class="repayment-options">
+                <div class="form-check">
+                  <input type="radio" name="original-method" id="original-equal-installment" value="equal-installment" checked />
+                  <label for="original-equal-installment">等额本息</label>
+                </div>
+                <div class="form-check">
+                  <input type="radio" name="original-method" id="original-equal-principal" value="equal-principal" />
+                  <label for="original-equal-principal">等额本金</label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="prepayment-actions">
+              <button id="calculate-prepayment-btn" class="btn btn-success"><i class="fa fa-calculator"></i> 计算提前还款</button>
+              <button id="clear-prepayment-btn" class="btn btn-secondary"><i class="fa fa-trash-o"></i> 清空</button>
+            </div>
+          </div>
+          
+          <div class="prepayment-results">
+            <div class="result-header">
+              <h3>提前还款计算结果</h3>
+              <div class="result-actions">
+                <button id="export-prepayment-btn" class="btn btn-sm"><i class="fa fa-download"></i> 导出还款计划</button>
+              </div>
+            </div>
+            
+            <div class="prepayment-summary" id="prepayment-summary"></div>
+            
+            <div class="prepayment-comparison">
+              <div class="comparison-header">
+                <h3>提前还款对比</h3>
+              </div>
+              
+              <div class="comparison-content" id="prepayment-comparison"></div>
+            </div>
+            
+            <div class="prepayment-chart-container">
+              <canvas id="prepayment-chart"></canvas>
+            </div>
+            
+            <div class="prepayment-schedule-header">
+              <h3>提前还款后还款计划</h3>
+            </div>
+            
+            <div class="prepayment-schedule-container">
+              <table class="loan-schedule" id="prepayment-schedule">
+                <thead>
+                  <tr>
+                    <th>期数</th>
+                    <th>还款日期</th>
+                    <th>月供</th>
+                    <th>本金</th>
+                    <th>利息</th>
+                    <th>剩余本金</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="tab-content" id="tab-compare">
+        <div class="compare-container">
+          <div class="compare-inputs">
+            <div class="form-group">
+              <label for="compare-amount">贷款金额</label>
+              <div class="input-with-unit">
+                <input type="number" id="compare-amount" class="form-control" value="500000" min="1" step="1000" />
+                <span class="unit">元</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="compare-term">贷款期限</label>
+              <div class="input-with-unit">
+                <input type="number" id="compare-term" class="form-control" value="30" min="1" max="30" />
+                <span class="unit">年</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>比较方案</label>
+              <div class="compare-options">
+                <div class="form-check">
+                  <input type="checkbox" id="compare-commercial" checked />
+                  <label for="compare-commercial">商业贷款</label>
+                </div>
+                <div class="form-check">
+                  <input type="checkbox" id="compare-housing" checked />
+                  <label for="compare-housing">公积金贷款</label>
+                </div>
+                <div class="form-check">
+                  <input type="checkbox" id="compare-combined" checked />
+                  <label for="compare-combined">组合贷款</label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>组合贷款比例</label>
+              <div class="combined-ratio">
+                <input type="range" id="combined-ratio" min="10" max="90" value="50" class="form-range" />
+                <div class="ratio-labels">
+                  <span id="commercial-ratio">50%</span>
+                  <span id="housing-ratio">50%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>还款方式</label>
+              <div class="compare-methods">
+                <div class="form-check">
+                  <input type="checkbox" id="compare-equal-installment" checked />
+                  <label for="compare-equal-installment">等额本息</label>
+                </div>
+                <div class="form-check">
+                  <input type="checkbox" id="compare-equal-principal" checked />
+                  <label for="compare-equal-principal">等额本金</label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="compare-actions">
+              <button id="calculate-compare-btn" class="btn btn-success"><i class="fa fa-calculator"></i> 比较方案</button>
+              <button id="clear-compare-btn" class="btn btn-secondary"><i class="fa fa-trash-o"></i> 清空</button>
+            </div>
+          </div>
+          
+          <div class="compare-results">
+            <div class="result-header">
+              <h3>贷款方案比较</h3>
+              <div class="result-actions">
+                <button id="export-compare-btn" class="btn btn-sm"><i class="fa fa-download"></i> 导出比较结果</button>
+              </div>
+            </div>
+            
+            <div class="compare-chart-container">
+              <canvas id="compare-chart"></canvas>
+            </div>
+            
+            <div class="compare-table-container">
+              <table class="compare-table" id="compare-table">
+                <thead>
+                  <tr>
+                    <th>贷款方案</th>
+                    <th>贷款金额</th>
+                    <th>贷款期限</th>
+                    <th>还款方式</th>
+                    <th>月供</th>
+                    <th>总还款额</th>
+                    <th>总利息</th>
+                    <th>利息占比</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="loan-info">
+      <div class="info-header">
+        <h3>还款方式说明</h3>
+      </div>
+      <div class="info-content">
+        <div class="info-item">
+          <h4>等额本息</h4>
+          <p>每月还款金额相同，其中本金逐月递增，利息逐月递减。适合收入稳定的借款人。</p>
+          <p>计算公式：每月还款额 = 贷款本金 × 月利率 × (1 + 月利率)^还款月数 ÷ [(1 + 月利率)^还款月数 - 1]</p>
+        </div>
+        
+        <div class="info-item">
+          <h4>等额本金</h4>
+          <p>每月归还等额本金和剩余贷款在该月所产生的利息，月供逐月递减。前期还款压力较大，但总利息较低。</p>
+          <p>计算公式：每月归还本金 = 贷款本金 ÷ 还款月数<br>每月利息 = 剩余本金 × 月利率<br>每月还款额 = 每月归还本金 + 每月利息</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

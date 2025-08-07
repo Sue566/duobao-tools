@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON格式化工具</title>
+  <link rel="stylesheet" href="jsonFormatter.css">
+</head>
+<body>
+  <div class="tool-container" id="json-formatter-tool">
+    <div class="tool-header">
+      <h2><i class="fa fa-code"></i> JSON格式化</h2>
+      <p class="tool-description">格式化、验证、查询和转换JSON数据，提供树视图和路径查询功能。</p>
+    </div>
+
+    <div class="json-tabs">
+      <div class="tab-header">
+        <button class="tab-btn active" data-tab="format">格式化</button>
+        <button class="tab-btn" data-tab="query">路径查询</button>
+        <button class="tab-btn" data-tab="convert">转换</button>
+        <button class="tab-btn" data-tab="compare">比较</button>
+      </div>
+
+      <div class="tab-content active" id="tab-format">
+        <div class="json-container">
+          <div class="json-input-section">
+            <div class="form-group">
+              <label for="json-input">JSON输入</label>
+              <div class="textarea-with-actions">
+                <textarea id="json-input" class="form-control" placeholder="在此粘贴JSON数据..."></textarea>
+                <div class="textarea-actions">
+                  <button id="paste-btn" class="btn btn-sm" title="从剪贴板粘贴"><i class="fa fa-clipboard"></i></button>
+                  <button id="load-file-btn" class="btn btn-sm" title="从文件加载"><i class="fa fa-folder-open"></i></button>
+                  <input type="file" id="file-input" accept=".json" style="display: none;">
+                </div>
+              </div>
+            </div>
+
+            <div class="json-actions">
+              <button id="format-btn" class="btn btn-success"><i class="fa fa-indent"></i> 格式化</button>
+              <button id="minify-btn" class="btn"><i class="fa fa-compress"></i> 压缩</button>
+              <button id="validate-btn" class="btn"><i class="fa fa-check-circle"></i> 验证</button>
+              <button id="clear-btn" class="btn btn-secondary"><i class="fa fa-trash-o"></i> 清空</button>
+            </div>
+
+            <div class="json-options">
+              <div class="form-check">
+                <input type="checkbox" id="auto-format" checked />
+                <label for="auto-format">自动格式化</label>
+              </div>
+
+              <div class="form-group">
+                <label for="indent-size">缩进大小</label>
+                <select id="indent-size" class="form-control">
+                  <option value="2">2 空格</option>
+                  <option value="4" selected>4 空格</option>
+                  <option value="8">8 空格</option>
+                  <option value="tab">Tab</option>
+                </select>
+              </div>
+
+              <div class="form-check">
+                <input type="checkbox" id="sort-keys" />
+                <label for="sort-keys">按键名排序</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="json-result-section">
+            <div class="result-header">
+              <h3>格式化结果</h3>
+              <div class="result-actions">
+                <button id="copy-btn" class="btn btn-sm"><i class="fa fa-copy"></i> 复制</button>
+                <button id="download-btn" class="btn btn-sm"><i class="fa fa-download"></i> 下载</button>
+              </div>
+            </div>
+
+            <div class="json-stats" id="json-stats">
+              <div class="stat-item">
+                <span class="stat-label">大小:</span>
+                <span class="stat-value" id="json-size">0 字节</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">节点数:</span>
+                <span class="stat-value" id="json-nodes">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">深度:</span>
+                <span class="stat-value" id="json-depth">0</span>
+              </div>
+            </div>
+
+            <div class="result-tabs">
+              <button class="result-tab active" data-view="formatted">格式化视图</button>
+              <button class="result-tab" data-view="tree">树形视图</button>
+            </div>
+
+            <div class="result-content active" id="formatted-view">
+              <pre id="json-output" class="json-output"></pre>
+            </div>
+
+            <div class="result-content" id="tree-view">
+              <div class="tree-actions">
+                <button id="expand-all" class="btn btn-sm"><i class="fa fa-plus-square-o"></i> 全部展开</button>
+                <button id="collapse-all" class="btn btn-sm"><i class="fa fa-minus-square-o"></i> 全部折叠</button>
+              </div>
+              <div id="json-tree" class="json-tree"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-query">
+        <div class="json-container">
+          <div class="json-input-section">
+            <div class="form-group">
+              <label for="query-json-input">JSON数据</label>
+              <textarea id="query-json-input" class="form-control" placeholder="在此粘贴JSON数据..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="json-path">JSONPath查询</label>
+              <div class="input-with-help">
+                <input type="text" id="json-path" class="form-control" placeholder="例如: $.store.book[*].author">
+                <button id="path-help" class="help-btn" title="JSONPath语法帮助"><i class="fa fa-question-circle"></i></button>
+              </div>
+            </div>
+
+            <div class="json-actions">
+              <button id="query-btn" class="btn btn-success"><i class="fa fa-search"></i> 执行查询</button>
+            </div>
+
+            <div class="path-examples">
+              <h4>常用查询示例:</h4>
+              <div class="examples-list">
+                <button class="example-btn" data-path="$.">根节点</button>
+                <button class="example-btn" data-path="$.store.book[0]">第一本书</button>
+                <button class="example-btn" data-path="$.store.book[*].title">所有书名</button>
+                <button class="example-btn" data-path="$.store.book[?(@.price < 10)]">价格小于10的书</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="json-result-section">
+            <div class="result-header">
+              <h3>查询结果</h3>
+              <div class="result-actions">
+                <button id="copy-query-result" class="btn btn-sm"><i class="fa fa-copy"></i> 复制</button>
+              </div>
+            </div>
+
+            <pre id="query-result" class="json-output"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-convert">
+        <div class="json-container">
+          <div class="json-input-section">
+            <div class="form-group">
+              <label for="convert-input">输入数据</label>
+              <textarea id="convert-input" class="form-control" placeholder="在此粘贴JSON或其他格式数据..."></textarea>
+            </div>
+
+            <div class="convert-actions">
+              <h4>转换选项:</h4>
+              <div class="convert-buttons">
+                <button id="json-to-yaml" class="btn"><i class="fa fa-exchange"></i> JSON → YAML</button>
+                <button id="yaml-to-json" class="btn"><i class="fa fa-exchange"></i> YAML → JSON</button>
+                <button id="json-to-xml" class="btn"><i class="fa fa-exchange"></i> JSON → XML</button>
+                <button id="xml-to-json" class="btn"><i class="fa fa-exchange"></i> XML → JSON</button>
+                <button id="json-to-csv" class="btn"><i class="fa fa-exchange"></i> JSON → CSV</button>
+                <button id="csv-to-json" class="btn"><i class="fa fa-exchange"></i> CSV → JSON</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="json-result-section">
+            <div class="result-header">
+              <h3>转换结果</h3>
+              <div class="result-actions">
+                <button id="copy-convert" class="btn btn-sm"><i class="fa fa-copy"></i> 复制</button>
+                <button id="download-convert" class="btn btn-sm"><i class="fa fa-download"></i> 下载</button>
+              </div>
+            </div>
+
+            <pre id="convert-result" class="json-output"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-compare">
+        <div class="json-compare-container">
+          <div class="json-compare-inputs">
+            <div class="form-group">
+              <label for="json-left">JSON 1</label>
+              <textarea id="json-left" class="form-control" placeholder="在此粘贴第一个JSON数据..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="json-right">JSON 2</label>
+              <textarea id="json-right" class="form-control" placeholder="在此粘贴第二个JSON数据..."></textarea>
+            </div>
+          </div>
+
+          <div class="json-actions">
+            <button id="compare-btn" class="btn btn-success"><i class="fa fa-code-fork"></i> 比较</button>
+          </div>
+
+          <div class="json-compare-result">
+            <h3>比较结果</h3>
+            <div id="compare-result" class="compare-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="json-help-modal" id="json-path-help">
+      <div class="help-modal-content">
+        <div class="help-modal-header">
+          <h3>JSONPath 语法帮助</h3>
+          <button class="close-help"><i class="fa fa-times"></i></button>
+        </div>
+        <div class="help-modal-body">
+          <table class="help-table">
+            <thead>
+              <tr>
+                <th>语法</th>
+                <th>描述</th>
+                <th>示例</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>$</td>
+                <td>根对象</td>
+                <td>$</td>
+              </tr>
+              <tr>
+                <td>@</td>
+                <td>当前对象</td>
+                <td>@.name</td>
+              </tr>
+              <tr>
+                <td>.</td>
+                <td>子元素</td>
+                <td>$.store.book</td>
+              </tr>
+              <tr>
+                <td>..</td>
+                <td>递归下降</td>
+                <td>$..author</td>
+              </tr>
+              <tr>
+                <td>*</td>
+                <td>通配符</td>
+                <td>$.store.*</td>
+              </tr>
+              <tr>
+                <td>[n]</td>
+                <td>数组索引</td>
+                <td>$.store.book[0]</td>
+              </tr>
+              <tr>
+                <td>[m:n]</td>
+                <td>数组切片</td>
+                <td>$.store.book[0:2]</td>
+              </tr>
+              <tr>
+                <td>[?()]</td>
+                <td>过滤表达式</td>
+                <td>$.store.book[?(@.price < 10)]</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="jsonFormatter.js"></script>
+</body>
+</html>
