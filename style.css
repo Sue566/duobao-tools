@@ -315,6 +315,71 @@ kbd {
 #content {
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+}
+
+/* 工具加载状态 */
+.tool-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  padding: 20px;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: var(--box-shadow);
+  z-index: 10;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 工具错误状态 */
+.tool-error {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: var(--box-shadow);
+}
+
+.tool-error i {
+  font-size: 48px;
+  color: var(--danger-color);
+  margin-bottom: 20px;
+}
+
+.tool-error h3 {
+  margin-bottom: 15px;
+  color: var(--danger-color);
+}
+
+.tool-error p {
+  margin-bottom: 10px;
+  color: var(--text-color);
+}
+
+.tool-error .error-details {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 20px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  word-break: break-all;
 }
 
 /* 搜索结果样式 */

@@ -1,3 +1,4 @@
+// 工具模块引用
 const modules = window.tools;
 
 // 加载菜单
@@ -218,46 +219,122 @@ function getToolIcon(tool) {
 
 // 显示指定工具
 function showTool(toolId) {
+  // 显示加载状态
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'tool-loading';
+  loadingEl.innerHTML = `
+    <div class="loading-spinner"></div>
+    <p>正在加载工具，请稍候...</p>
+  `;
+  document.getElementById('content').appendChild(loadingEl);
+  
   // 隐藏所有工具
   document.querySelectorAll('#content section').forEach(sec => {
     sec.style.display = 'none';
   });
   
-  // 显示指定工具
-  const toolSection = document.getElementById(`tool-${toolId}`);
-  if (toolSection) {
-    toolSection.style.display = 'block';
-    
-    // 如果工具还没有渲染，则渲染它
-    if (toolSection.innerHTML === '') {
-      const module = modules[toolId];
-      if (module && module.render) {
-        module.render(toolSection);
-        
-        // 添加工具使用次数
-        incrementToolUsage(toolId);
-        
-        // 添加到历史记录
-        window.addToHistory(toolId);
-      }
-    }
-    
-    // 隐藏首页
-    const homepage = document.getElementById('homepage');
-    if (homepage) {
-      homepage.style.display = 'none';
-    }
-    
-    // 滚动到顶部
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // 更新页面标题
-    const toolTitle = toolSection.dataset.title || '工具';
-    document.title = `${toolTitle} - 多宝工具箱`;
-    
-    // 添加面包屑导航
-    updateBreadcrumb(toolId);
+  // 隐藏首页
+  const homepage = document.getElementById('homepage');
+  if (homepage) {
+    homepage.style.display = 'none';
   }
+  
+  // 先加载工具，再显示
+  window.loadTool(toolId)
+    .then(() => {
+      // 移除加载状态
+      if (loadingEl.parentNode) {
+        loadingEl.parentNode.removeChild(loadingEl);
+      }
+      
+      // 显示指定工具
+      const toolSection = document.getElementById(`tool-${toolId}`);
+      if (toolSection) {
+        toolSection.style.display = 'block';
+        
+        // 如果工具还没有渲染，则渲染它
+        if (toolSection.innerHTML === '') {
+          const module = window.tools[toolId];
+          if (module && module.render) {
+            // 如果工具有初始化方法，先初始化
+            if (module.init) {
+              Promise.resolve(module.init())
+                .then(() => {
+                  module.render(toolSection);
+                  
+                  // 添加工具使用次数
+                  incrementToolUsage(toolId);
+                  
+                  // 添加到历史记录
+                  window.addToHistory(toolId);
+                })
+                .catch(err => {
+                  console.error(`工具 ${toolId} 初始化失败:`, err);
+                  toolSection.innerHTML = `
+                    <div class="tool-error">
+                      <i class="fa fa-exclamation-triangle"></i>
+                      <h3>工具加载失败</h3>
+                      <p>很抱歉，工具初始化时出现错误。请刷新页面重试。</p>
+                      <p class="error-details">错误详情: ${err.message}</p>
+                    </div>
+                  `;
+                });
+            } else {
+              module.render(toolSection);
+              
+              // 添加工具使用次数
+              incrementToolUsage(toolId);
+              
+              // 添加到历史记录
+              window.addToHistory(toolId);
+            }
+          } else {
+            toolSection.innerHTML = `
+              <div class="tool-error">
+                <i class="fa fa-exclamation-triangle"></i>
+                <h3>工具加载失败</h3>
+                <p>很抱歉，无法找到该工具。请刷新页面重试。</p>
+              </div>
+            `;
+          }
+        }
+        
+        // 滚动到顶部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // 更新页面标题
+        const toolTitle = toolSection.dataset.title || '工具';
+        document.title = `${toolTitle} - 多宝工具箱`;
+        
+        // 添加面包屑导航
+        updateBreadcrumb(toolId);
+      }
+    })
+    .catch(err => {
+      // 移除加载状态
+      if (loadingEl.parentNode) {
+        loadingEl.parentNode.removeChild(loadingEl);
+      }
+      
+      console.error(`加载工具 ${toolId} 失败:`, err);
+      
+      // 显示错误信息
+      const errorSection = document.createElement('section');
+      errorSection.id = `tool-${toolId}`;
+      errorSection.innerHTML = `
+        <div class="tool-error">
+          <i class="fa fa-exclamation-triangle"></i>
+          <h3>工具加载失败</h3>
+          <p>很抱歉，工具加载时出现错误。请刷新页面重试。</p>
+          <p class="error-details">错误详情: ${err.message}</p>
+        </div>
+      `;
+      document.getElementById('content').appendChild(errorSection);
+      errorSection.style.display = 'block';
+      
+      // 更新面包屑导航
+      updateBreadcrumb(toolId);
+    });
 }
 
 // 更新面包屑导航
@@ -605,7 +682,7 @@ function filterMenu(term) {
   return hasMatch;
 }
 
-// 加载所有工具
+// 加载所有工具容器
 function loadAllTools(menu) {
   const content = document.getElementById('content');
   
@@ -614,10 +691,40 @@ function loadAllTools(menu) {
       const section = document.createElement('section');
       section.id = `tool-${child.tool}`;
       section.dataset.title = child.title;
+      section.dataset.category = cat.title;
       section.style.display = 'none'; // 默认隐藏所有工具
       content.appendChild(section);
     });
   });
+  
+  // 添加工具使用统计功能
+  updateToolsUsageStats();
+}
+
+// 更新工具使用统计
+function updateToolsUsageStats() {
+  try {
+    // 获取工具使用次数
+    const usage = JSON.parse(localStorage.getItem('toolUsage')) || {};
+    
+    // 获取最近使用的工具
+    const history = JSON.parse(localStorage.getItem('toolHistory')) || [];
+    
+    // 更新热门工具列表
+    const popularTools = Object.entries(usage)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([toolId]) => toolId);
+    
+    // 更新预加载列表
+    if (window.toolsStatus && popularTools.length > 0) {
+      window.toolsStatus.popular = popularTools;
+    }
+    
+    console.log('热门工具统计更新完成');
+  } catch (e) {
+    console.error('更新工具统计失败', e);
+  }
 }
 
 // 复制文本到剪贴板

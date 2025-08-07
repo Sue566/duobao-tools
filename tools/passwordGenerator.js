@@ -1,5 +1,6 @@
 /**
  * 密码生成器
+ * 增强版：支持多种密码类型、密码分析、自定义字符集和密码导出
  */
 (function() {
   // 定义工具
@@ -9,7 +10,7 @@
       container.innerHTML = `
         <div class="tool-header">
           <h2><i class="fa fa-key"></i> 密码生成器</h2>
-          <p class="tool-description">生成安全的随机密码，可自定义规则和复杂度。</p>
+          <p class="tool-description">生成安全的随机密码，支持多种密码类型、自定义规则和密码分析。</p>
         </div>
         
         <div class="password-container">
@@ -31,13 +32,34 @@
               </div>
               <div class="strength-text" id="strength-text">中等</div>
             </div>
+            
+            <div class="password-info">
+              <div class="info-item">
+                <span class="info-label">破解时间估计：</span>
+                <span class="info-value" id="crack-time">计算中...</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">熵值：</span>
+                <span class="info-value" id="entropy-value">0 位</span>
+              </div>
+            </div>
           </div>
           
           <div class="password-options">
+            <div class="password-presets">
+              <label>密码类型</label>
+              <div class="preset-buttons">
+                <button id="preset-strong" class="btn btn-sm active">强密码</button>
+                <button id="preset-memorable" class="btn btn-sm">易记密码</button>
+                <button id="preset-pin" class="btn btn-sm">数字PIN</button>
+                <button id="preset-custom" class="btn btn-sm">自定义</button>
+              </div>
+            </div>
+            
             <div class="form-group">
               <label for="password-length">密码长度</label>
               <div class="range-with-value">
-                <input type="range" id="password-length" min="4" max="64" value="16" />
+                <input type="range" id="password-length" min="4" max="128" value="16" />
                 <span id="length-value">16</span>
               </div>
             </div>
@@ -83,19 +105,81 @@
             </div>
             
             <div class="form-group">
-              <button id="generate-btn" class="btn btn-success"><i class="fa fa-refresh"></i> 生成密码</button>
-              <button id="save-btn" class="btn"><i class="fa fa-save"></i> 保存密码</button>
+              <label for="custom-chars">自定义字符集 <small>(可选)</small></label>
+              <input type="text" id="custom-chars" class="form-control" placeholder="输入自定义字符集..." />
+            </div>
+            
+            <div class="form-group">
+              <div class="btn-group">
+                <button id="generate-btn" class="btn btn-success"><i class="fa fa-refresh"></i> 生成密码</button>
+                <button id="save-btn" class="btn"><i class="fa fa-save"></i> 保存密码</button>
+                <button id="export-btn" class="btn btn-secondary"><i class="fa fa-download"></i> 导出密码</button>
+              </div>
             </div>
           </div>
         </div>
         
-        <div class="password-history">
-          <div class="history-header">
-            <h3>历史记录</h3>
-            <button id="clear-history" class="btn btn-sm btn-secondary"><i class="fa fa-trash-o"></i> 清空</button>
+        <div class="password-tabs">
+          <div class="tab-header">
+            <button class="tab-btn active" data-tab="history">历史记录</button>
+            <button class="tab-btn" data-tab="analysis">密码分析</button>
+            <button class="tab-btn" data-tab="tips">安全提示</button>
           </div>
-          <div class="history-list" id="history-list">
-            <div class="no-history">暂无历史记录</div>
+          
+          <div class="tab-content active" id="tab-history">
+            <div class="history-header">
+              <h3>历史记录</h3>
+              <button id="clear-history" class="btn btn-sm btn-secondary"><i class="fa fa-trash-o"></i> 清空</button>
+            </div>
+            <div class="history-list" id="history-list">
+              <div class="no-history">暂无历史记录</div>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="tab-analysis">
+            <div class="analysis-container">
+              <div class="form-group">
+                <label for="analysis-input">分析密码</label>
+                <div class="analysis-input-wrapper">
+                  <input type="password" id="analysis-input" class="form-control" placeholder="输入密码进行分析..." />
+                  <button id="toggle-visibility" class="btn btn-icon" title="显示/隐藏密码">
+                    <i class="fa fa-eye"></i>
+                  </button>
+                  <button id="analyze-btn" class="btn btn-primary">分析</button>
+                </div>
+              </div>
+              
+              <div class="analysis-results" id="analysis-results">
+                <div class="no-analysis">输入密码后点击"分析"按钮</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="tab-tips">
+            <div class="tips-container">
+              <h3>密码安全提示</h3>
+              <ul class="tips-list">
+                <li><strong>长度很重要</strong> - 使用至少12个字符的密码，16个或更多更好。</li>
+                <li><strong>混合字符类型</strong> - 结合使用大小写字母、数字和特殊符号。</li>
+                <li><strong>避免个人信息</strong> - 不要使用生日、姓名、宠物名或其他个人信息。</li>
+                <li><strong>不要重复使用</strong> - 为不同的网站和服务使用不同的密码。</li>
+                <li><strong>定期更换</strong> - 定期更换重要账户的密码，特别是在数据泄露后。</li>
+                <li><strong>使用密码管理器</strong> - 考虑使用密码管理器来存储和生成复杂密码。</li>
+                <li><strong>启用双因素认证</strong> - 在可能的情况下，为账户添加额外的安全层。</li>
+                <li><strong>检查密码是否泄露</strong> - 使用如 Have I Been Pwned 等服务检查您的密码是否在数据泄露中出现过。</li>
+              </ul>
+              
+              <h3>常见的密码错误</h3>
+              <ul class="tips-list">
+                <li>使用常见密码，如 "password", "123456", "qwerty" 等。</li>
+                <li>仅更改密码末尾的数字（例如 password1, password2）。</li>
+                <li>使用键盘上连续的字符（如 qwerty, 12345）。</li>
+                <li>使用容易猜测的个人信息。</li>
+                <li>在多个网站使用相同的密码。</li>
+                <li>将密码写在纸上或未加密的文件中。</li>
+                <li>通过不安全的渠道（如电子邮件或短信）共享密码。</li>
+              </ul>
+            </div>
           </div>
         </div>
       `;
@@ -123,16 +207,45 @@
       const historyList = container.querySelector('#history-list');
       const clearHistory = container.querySelector('#clear-history');
       
+      // 获取额外元素
+      const customChars = container.querySelector('#custom-chars');
+      const presetStrong = container.querySelector('#preset-strong');
+      const presetMemorable = container.querySelector('#preset-memorable');
+      const presetPin = container.querySelector('#preset-pin');
+      const presetCustom = container.querySelector('#preset-custom');
+      const exportBtn = container.querySelector('#export-btn');
+      const crackTime = container.querySelector('#crack-time');
+      const entropyValue = container.querySelector('#entropy-value');
+      const tabButtons = container.querySelectorAll('.tab-btn');
+      const tabContents = container.querySelectorAll('.tab-content');
+      const analysisInput = container.querySelector('#analysis-input');
+      const toggleVisibility = container.querySelector('#toggle-visibility');
+      const analyzeBtn = container.querySelector('#analyze-btn');
+      const analysisResults = container.querySelector('#analysis-results');
+      
       // 字符集
       const charSets = {
         uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
         lowercase: 'abcdefghijklmnopqrstuvwxyz',
         numbers: '0123456789',
-        symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?'
+        symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?',
+        memorable: {
+          consonants: 'bcdfghjklmnpqrstvwxyz',
+          vowels: 'aeiou',
+          numbers: '23456789'
+        }
       };
       
       const similarChars = 'iIlL1oO0';
       const ambiguousChars = '{}[]()/\\\'"`~,;:.<>';
+      
+      // 常见密码列表（用于检查）
+      const commonPasswords = [
+        'password', '123456', 'qwerty', 'admin', 'welcome',
+        'login', '123123', '12345678', 'abc123', 'letmein',
+        'monkey', '1234567', 'sunshine', 'master', '111111',
+        'superman', 'iloveyou', 'trustno1', 'princess', 'dragon'
+      ];
       
       // 更新长度显示
       lengthInput.addEventListener('input', () => {
@@ -246,8 +359,161 @@
         return array.join('');
       }
       
+      // 预设密码类型
+      function applyPreset(type) {
+        // 重置所有预设按钮
+        [presetStrong, presetMemorable, presetPin, presetCustom].forEach(btn => {
+          btn.classList.remove('active');
+        });
+        
+        switch (type) {
+          case 'strong':
+            presetStrong.classList.add('active');
+            lengthInput.value = 16;
+            lengthValue.textContent = '16';
+            includeUppercase.checked = true;
+            includeLowercase.checked = true;
+            includeNumbers.checked = true;
+            includeSymbols.checked = true;
+            excludeSimilar.checked = true;
+            excludeAmbiguous.checked = false;
+            requireAllTypes.checked = true;
+            customChars.value = '';
+            break;
+            
+          case 'memorable':
+            presetMemorable.classList.add('active');
+            lengthInput.value = 12;
+            lengthValue.textContent = '12';
+            includeUppercase.checked = true;
+            includeLowercase.checked = true;
+            includeNumbers.checked = true;
+            includeSymbols.checked = false;
+            excludeSimilar.checked = true;
+            excludeAmbiguous.checked = true;
+            requireAllTypes.checked = false;
+            customChars.value = '';
+            break;
+            
+          case 'pin':
+            presetPin.classList.add('active');
+            lengthInput.value = 6;
+            lengthValue.textContent = '6';
+            includeUppercase.checked = false;
+            includeLowercase.checked = false;
+            includeNumbers.checked = true;
+            includeSymbols.checked = false;
+            excludeSimilar.checked = false;
+            excludeAmbiguous.checked = false;
+            requireAllTypes.checked = false;
+            customChars.value = '';
+            break;
+            
+          case 'custom':
+            presetCustom.classList.add('active');
+            // 不改变当前设置
+            break;
+        }
+        
+        // 生成新密码
+        generatePassword();
+      }
+      
+      // 生成易记密码
+      function generateMemorablePassword(length) {
+        // 创建一个易记的密码，通常是辅音+元音的组合
+        const consonants = charSets.memorable.consonants;
+        const vowels = charSets.memorable.vowels;
+        const numbers = charSets.memorable.numbers;
+        
+        let password = '';
+        let syllables = Math.ceil(length / 3);
+        
+        for (let i = 0; i < syllables; i++) {
+          // 添加辅音
+          password += consonants.charAt(Math.floor(Math.random() * consonants.length));
+          
+          // 添加元音
+          if (password.length < length) {
+            password += vowels.charAt(Math.floor(Math.random() * vowels.length));
+          }
+          
+          // 有25%的几率添加数字
+          if (password.length < length && Math.random() < 0.25) {
+            password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+          }
+        }
+        
+        // 确保密码长度正确
+        password = password.substring(0, length);
+        
+        // 随机将第一个字母大写
+        if (includeUppercase.checked && password.length > 0) {
+          password = password.charAt(0).toUpperCase() + password.slice(1);
+        }
+        
+        return password;
+      }
+      
+      // 计算密码熵
+      function calculateEntropy(password) {
+        if (!password) return 0;
+        
+        // 确定字符集大小
+        let charsetSize = 0;
+        
+        if (/[A-Z]/.test(password)) charsetSize += 26;
+        if (/[a-z]/.test(password)) charsetSize += 26;
+        if (/[0-9]/.test(password)) charsetSize += 10;
+        if (/[^A-Za-z0-9]/.test(password)) charsetSize += 33; // 估计特殊字符数量
+        
+        // 如果无法确定字符集，使用默认值
+        if (charsetSize === 0) charsetSize = 26;
+        
+        // 计算熵：log2(字符集大小^密码长度) = 密码长度 * log2(字符集大小)
+        const entropy = Math.log2(Math.pow(charsetSize, password.length));
+        
+        return entropy;
+      }
+      
+      // 估计破解时间
+      function estimateCrackTime(entropy) {
+        // 假设每秒可以尝试10亿个密码
+        const guessesPerSecond = 1000000000;
+        
+        // 平均需要尝试的次数是可能组合的一半
+        const combinations = Math.pow(2, entropy);
+        const seconds = combinations / (2 * guessesPerSecond);
+        
+        // 转换为更易读的时间格式
+        if (seconds < 60) {
+          return '瞬间';
+        } else if (seconds < 3600) {
+          return `${Math.round(seconds / 60)} 分钟`;
+        } else if (seconds < 86400) {
+          return `${Math.round(seconds / 3600)} 小时`;
+        } else if (seconds < 31536000) {
+          return `${Math.round(seconds / 86400)} 天`;
+        } else if (seconds < 3153600000) {
+          return `${Math.round(seconds / 31536000)} 年`;
+        } else if (seconds < 315360000000) {
+          return `${Math.round(seconds / 3153600000)} 世纪`;
+        } else {
+          return '数百万年以上';
+        }
+      }
+      
       // 评估密码强度
       function evaluatePasswordStrength(password) {
+        if (!password) {
+          strengthBar.className = 'strength-bar';
+          strengthBar.style.width = '0%';
+          strengthText.textContent = '';
+          crackTime.textContent = '';
+          entropyValue.textContent = '0 位';
+          return;
+        }
+        
         // 基础分数
         let score = 0;
         
@@ -266,6 +532,24 @@
         // 额外规则
         if (password.length >= 12) score += 2;
         if (password.length >= 16) score += 2;
+        
+        // 重复字符和序列的惩罚
+        const repeats = password.match(/(.)\1{2,}/g);
+        if (repeats) {
+          score -= repeats.length * 1.5;
+        }
+        
+        // 检查是否是常见密码
+        if (commonPasswords.includes(password.toLowerCase())) {
+          score = Math.min(score, 5); // 限制常见密码的分数
+        }
+        
+        // 计算熵
+        const entropy = calculateEntropy(password);
+        entropyValue.textContent = `${Math.round(entropy)} 位`;
+        
+        // 估计破解时间
+        crackTime.textContent = estimateCrackTime(entropy);
         
         // 设置强度显示
         let strengthClass = '';

@@ -1,5 +1,6 @@
 /**
  * 哈希计算器
+ * 增强版：支持更多哈希算法、文件分块处理、哈希比较和验证功能
  */
 (function() {
   // 定义工具
@@ -9,7 +10,7 @@
       container.innerHTML = `
         <div class="tool-header">
           <h2><i class="fa fa-hashtag"></i> 哈希计算器</h2>
-          <p class="tool-description">计算文本或文件的哈希值，支持MD5、SHA-1、SHA-256等多种算法。</p>
+          <p class="tool-description">计算文本或文件的哈希值，支持MD5、SHA-1、SHA-256等多种算法，提供哈希比较和验证功能。</p>
         </div>
         
         <div class="hash-container">
@@ -17,6 +18,8 @@
             <div class="hash-tabs">
               <button class="hash-tab-btn active" data-tab="text">文本</button>
               <button class="hash-tab-btn" data-tab="file">文件</button>
+              <button class="hash-tab-btn" data-tab="compare">哈希比较</button>
+              <button class="hash-tab-btn" data-tab="verify">哈希验证</button>
             </div>
             
             <div class="hash-tab-content">
@@ -58,6 +61,74 @@
                 </div>
                 
                 <div class="file-info" id="file-info"></div>
+                
+                <div class="form-group">
+                  <div class="form-check">
+                    <input type="checkbox" id="chunk-processing" checked />
+                    <label for="chunk-processing">分块处理大文件（推荐用于大于10MB的文件）</label>
+                  </div>
+                </div>
+                
+                <div class="progress-container" id="progress-container" style="display: none;">
+                  <label>处理进度</label>
+                  <div class="progress">
+                    <div class="progress-bar" id="progress-bar" style="width: 0%;">0%</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="hash-tab-pane" id="tab-compare">
+                <div class="form-group">
+                  <label for="hash1-input">哈希值 1</label>
+                  <textarea id="hash1-input" class="form-control" placeholder="输入第一个哈希值..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                  <label for="hash2-input">哈希值 2</label>
+                  <textarea id="hash2-input" class="form-control" placeholder="输入第二个哈希值..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                  <button id="compare-btn" class="btn btn-success"><i class="fa fa-exchange"></i> 比较哈希值</button>
+                </div>
+                
+                <div class="compare-result" id="compare-result"></div>
+              </div>
+              
+              <div class="hash-tab-pane" id="tab-verify">
+                <div class="form-group">
+                  <label for="verify-file-input">选择文件</label>
+                  <div class="file-input-container">
+                    <input type="file" id="verify-file-input" />
+                    <label for="verify-file-input" class="file-input-label">
+                      <i class="fa fa-upload"></i> 选择文件
+                    </label>
+                    <span id="verify-file-name">未选择文件</span>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="verify-hash-input">预期哈希值</label>
+                  <textarea id="verify-hash-input" class="form-control" placeholder="输入预期的哈希值..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                  <label for="verify-algorithm">哈希算法</label>
+                  <select id="verify-algorithm" class="form-control">
+                    <option value="md5">MD5</option>
+                    <option value="sha1">SHA-1</option>
+                    <option value="sha256" selected>SHA-256</option>
+                    <option value="sha512">SHA-512</option>
+                    <option value="sha3">SHA-3</option>
+                    <option value="ripemd160">RIPEMD-160</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <button id="verify-btn" class="btn btn-success"><i class="fa fa-check-circle"></i> 验证哈希值</button>
+                </div>
+                
+                <div class="verify-result" id="verify-result"></div>
               </div>
             </div>
             
@@ -88,6 +159,14 @@
                   <input type="checkbox" id="algo-ripemd160" />
                   <label for="algo-ripemd160">RIPEMD-160</label>
                 </div>
+                <div class="form-check">
+                  <input type="checkbox" id="algo-blake2b" />
+                  <label for="algo-blake2b">BLAKE2b</label>
+                </div>
+                <div class="form-check">
+                  <input type="checkbox" id="algo-keccak" />
+                  <label for="algo-keccak">Keccak</label>
+                </div>
               </div>
             </div>
             
@@ -101,7 +180,11 @@
             <div class="hash-result-header">
               <h3>计算结果</h3>
               <div class="hash-result-actions">
+                <div class="hash-result-actions">
                 <button id="copy-all-btn" class="btn btn-sm"><i class="fa fa-copy"></i> 复制所有</button>
+                <button id="save-results-btn" class="btn btn-sm"><i class="fa fa-download"></i> 保存结果</button>
+                <button id="clear-results-btn" class="btn btn-sm btn-secondary"><i class="fa fa-trash-o"></i> 清空结果</button>
+              </div>
               </div>
             </div>
             
@@ -160,6 +243,21 @@
       const fileInput = container.querySelector('#file-input');
       const fileName = container.querySelector('#file-name');
       const fileInfo = container.querySelector('#file-info');
+      const chunkProcessing = container.querySelector('#chunk-processing');
+      const progressContainer = container.querySelector('#progress-container');
+      const progressBar = container.querySelector('#progress-bar');
+      
+      const hash1Input = container.querySelector('#hash1-input');
+      const hash2Input = container.querySelector('#hash2-input');
+      const compareBtn = container.querySelector('#compare-btn');
+      const compareResult = container.querySelector('#compare-result');
+      
+      const verifyFileInput = container.querySelector('#verify-file-input');
+      const verifyFileName = container.querySelector('#verify-file-name');
+      const verifyHashInput = container.querySelector('#verify-hash-input');
+      const verifyAlgorithm = container.querySelector('#verify-algorithm');
+      const verifyBtn = container.querySelector('#verify-btn');
+      const verifyResult = container.querySelector('#verify-result');
       
       const algoMd5 = container.querySelector('#algo-md5');
       const algoSha1 = container.querySelector('#algo-sha1');
@@ -167,10 +265,14 @@
       const algoSha512 = container.querySelector('#algo-sha512');
       const algoSha3 = container.querySelector('#algo-sha3');
       const algoRipemd160 = container.querySelector('#algo-ripemd160');
+      const algoBlake2b = container.querySelector('#algo-blake2b');
+      const algoKeccak = container.querySelector('#algo-keccak');
       
       const calculateBtn = container.querySelector('#calculate-btn');
       const clearBtn = container.querySelector('#clear-btn');
       const copyAllBtn = container.querySelector('#copy-all-btn');
+      const saveResultsBtn = container.querySelector('#save-results-btn');
+      const clearResultsBtn = container.querySelector('#clear-results-btn');
       const hashResults = container.querySelector('#hash-results');
       
       // 切换标签页
@@ -215,9 +317,21 @@
               <span class="file-info-value">${new Date(file.lastModified).toLocaleString()}</span>
             </div>
           `;
+          
+          // 自动选择分块处理
+          chunkProcessing.checked = file.size > 10 * 1024 * 1024; // 10MB
         } else {
           fileName.textContent = '未选择文件';
           fileInfo.innerHTML = '';
+        }
+      });
+      
+      // 验证文件选择处理
+      verifyFileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          verifyFileName.textContent = e.target.files[0].name;
+        } else {
+          verifyFileName.textContent = '未选择文件';
         }
       });
       
@@ -308,7 +422,16 @@
         // 显示加载状态
         hashResults.innerHTML = '<div class="loading"><i class="fa fa-spinner fa-spin"></i> 计算中，请稍候...</div>';
         
-        // 读取文件
+        // 检查是否使用分块处理
+        if (chunkProcessing.checked && file.size > 1024 * 1024) { // 大于1MB才使用分块
+          calculateFileHashInChunks(file, algorithms);
+        } else {
+          calculateFileHashAtOnce(file, algorithms);
+        }
+      }
+      
+      // 一次性计算文件哈希
+      function calculateFileHashAtOnce(file, algorithms) {
         const reader = new FileReader();
         
         reader.onload = function(e) {
@@ -340,11 +463,28 @@
                   case 'ripemd160':
                     results.ripemd160 = CryptoJS.RIPEMD160(CryptoJS.lib.WordArray.create(fileContent)).toString();
                     break;
+                  case 'blake2b':
+                    if (CryptoJS.BLAKE2b) {
+                      results.blake2b = CryptoJS.BLAKE2b(CryptoJS.lib.WordArray.create(fileContent)).toString();
+                    } else {
+                      results.blake2b = '不支持 BLAKE2b 算法';
+                    }
+                    break;
+                  case 'keccak':
+                    if (CryptoJS.Keccak) {
+                      results.keccak = CryptoJS.Keccak(CryptoJS.lib.WordArray.create(fileContent)).toString();
+                    } else {
+                      results.keccak = '不支持 Keccak 算法';
+                    }
+                    break;
                 }
               });
               
               // 显示结果
               displayResults(results);
+              
+              // 保存到历史记录
+              saveToHistory(file.name, results);
             } catch (e) {
               hashResults.innerHTML = `<div class="error">计算哈希值时出错: ${e.message}</div>`;
             }
@@ -358,6 +498,112 @@
         reader.readAsArrayBuffer(file);
       }
       
+      // 分块计算文件哈希
+      function calculateFileHashInChunks(file, algorithms) {
+        const chunkSize = 2 * 1024 * 1024; // 2MB 块大小
+        const chunks = Math.ceil(file.size / chunkSize);
+        let currentChunk = 0;
+        
+        // 显示进度条
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
+        
+        // 初始化哈希对象
+        const hashObjects = {};
+        algorithms.forEach(algo => {
+          switch (algo) {
+            case 'md5':
+              hashObjects.md5 = CryptoJS.algo.MD5.create();
+              break;
+            case 'sha1':
+              hashObjects.sha1 = CryptoJS.algo.SHA1.create();
+              break;
+            case 'sha256':
+              hashObjects.sha256 = CryptoJS.algo.SHA256.create();
+              break;
+            case 'sha512':
+              hashObjects.sha512 = CryptoJS.algo.SHA512.create();
+              break;
+            case 'sha3':
+              hashObjects.sha3 = CryptoJS.algo.SHA3.create();
+              break;
+            case 'ripemd160':
+              hashObjects.ripemd160 = CryptoJS.algo.RIPEMD160.create();
+              break;
+            case 'blake2b':
+              if (CryptoJS.algo.BLAKE2b) {
+                hashObjects.blake2b = CryptoJS.algo.BLAKE2b.create();
+              }
+              break;
+            case 'keccak':
+              if (CryptoJS.algo.Keccak) {
+                hashObjects.keccak = CryptoJS.algo.Keccak.create();
+              }
+              break;
+          }
+        });
+        
+        // 读取下一个块
+        function readNextChunk() {
+          const start = currentChunk * chunkSize;
+          const end = Math.min(start + chunkSize, file.size);
+          
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const chunk = e.target.result;
+            
+            // 更新哈希
+            algorithms.forEach(algo => {
+              if (hashObjects[algo]) {
+                hashObjects[algo].update(CryptoJS.lib.WordArray.create(chunk));
+              }
+            });
+            
+            // 更新进度
+            currentChunk++;
+            const progress = Math.round((currentChunk / chunks) * 100);
+            progressBar.style.width = progress + '%';
+            progressBar.textContent = progress + '%';
+            
+            // 继续读取下一个块或完成
+            if (currentChunk < chunks) {
+              readNextChunk();
+            } else {
+              // 完成所有块的处理
+              const results = {};
+              
+              // 获取最终哈希值
+              algorithms.forEach(algo => {
+                if (hashObjects[algo]) {
+                  results[algo] = hashObjects[algo].finalize().toString();
+                }
+              });
+              
+              // 隐藏进度条
+              progressContainer.style.display = 'none';
+              
+              // 显示结果
+              displayResults(results);
+              
+              // 保存到历史记录
+              saveToHistory(file.name, results);
+            }
+          };
+          
+          reader.onerror = function() {
+            hashResults.innerHTML = '<div class="error">读取文件块时出错</div>';
+            progressContainer.style.display = 'none';
+          };
+          
+          const blob = file.slice(start, end);
+          reader.readAsArrayBuffer(blob);
+        }
+        
+        // 开始读取第一个块
+        readNextChunk();
+      }
+      
       // 获取选中的算法
       function getSelectedAlgorithms() {
         const algorithms = [];
@@ -368,8 +614,280 @@
         if (algoSha512.checked) algorithms.push('sha512');
         if (algoSha3.checked) algorithms.push('sha3');
         if (algoRipemd160.checked) algorithms.push('ripemd160');
+        if (algoBlake2b && algoBlake2b.checked) algorithms.push('blake2b');
+        if (algoKeccak && algoKeccak.checked) algorithms.push('keccak');
         
         return algorithms;
+      }
+      
+      // 比较哈希值
+      function compareHashes() {
+        const hash1 = hash1Input.value.trim().toLowerCase();
+        const hash2 = hash2Input.value.trim().toLowerCase();
+        
+        if (!hash1 || !hash2) {
+          showToast('请输入两个哈希值进行比较', 'warning');
+          return;
+        }
+        
+        // 移除所有空格和换行符
+        const cleanHash1 = hash1.replace(/\s+/g, '');
+        const cleanHash2 = hash2.replace(/\s+/g, '');
+        
+        if (cleanHash1 === cleanHash2) {
+          compareResult.innerHTML = `
+            <div class="compare-match">
+              <i class="fa fa-check-circle"></i> 哈希值匹配
+            </div>
+          `;
+        } else {
+          // 计算差异位数
+          let diffCount = 0;
+          const minLength = Math.min(cleanHash1.length, cleanHash2.length);
+          
+          for (let i = 0; i < minLength; i++) {
+            if (cleanHash1[i] !== cleanHash2[i]) {
+              diffCount++;
+            }
+          }
+          
+          // 添加长度差异
+          diffCount += Math.abs(cleanHash1.length - cleanHash2.length);
+          
+          // 计算差异百分比
+          const diffPercentage = (diffCount / Math.max(cleanHash1.length, cleanHash2.length) * 100).toFixed(2);
+          
+          compareResult.innerHTML = `
+            <div class="compare-mismatch">
+              <i class="fa fa-times-circle"></i> 哈希值不匹配
+              <div class="diff-details">
+                <div>差异位数: ${diffCount}</div>
+                <div>差异百分比: ${diffPercentage}%</div>
+              </div>
+            </div>
+            <div class="hash-diff-view">
+              ${generateHashDiffView(cleanHash1, cleanHash2)}
+            </div>
+          `;
+        }
+      }
+      
+      // 生成哈希差异视图
+      function generateHashDiffView(hash1, hash2) {
+        let html = '<div class="hash-diff-container">';
+        
+        // 第一个哈希
+        html += '<div class="hash-diff-row"><span class="hash-label">哈希1:</span> ';
+        for (let i = 0; i < hash1.length; i++) {
+          const char = hash1[i];
+          const isDifferent = i >= hash2.length || char !== hash2[i];
+          html += `<span class="hash-char ${isDifferent ? 'diff' : ''}">${char}</span>`;
+        }
+        html += '</div>';
+        
+        // 第二个哈希
+        html += '<div class="hash-diff-row"><span class="hash-label">哈希2:</span> ';
+        for (let i = 0; i < hash2.length; i++) {
+          const char = hash2[i];
+          const isDifferent = i >= hash1.length || char !== hash1[i];
+          html += `<span class="hash-char ${isDifferent ? 'diff' : ''}">${char}</span>`;
+        }
+        html += '</div>';
+        
+        html += '</div>';
+        return html;
+      }
+      
+      // 验证文件哈希
+      function verifyFileHash() {
+        const file = verifyFileInput.files[0];
+        const expectedHash = verifyHashInput.value.trim().toLowerCase().replace(/\s+/g, '');
+        const algorithm = verifyAlgorithm.value;
+        
+        if (!file) {
+          showToast('请选择文件', 'warning');
+          return;
+        }
+        
+        if (!expectedHash) {
+          showToast('请输入预期的哈希值', 'warning');
+          return;
+        }
+        
+        // 显示加载状态
+        verifyResult.innerHTML = '<div class="loading"><i class="fa fa-spinner fa-spin"></i> 验证中，请稍候...</div>';
+        
+        // 检查文件大小，决定是否使用分块处理
+        if (file.size > 10 * 1024 * 1024) { // 大于10MB
+          verifyFileHashInChunks(file, algorithm, expectedHash);
+        } else {
+          verifyFileHashAtOnce(file, algorithm, expectedHash);
+        }
+      }
+      
+      // 一次性验证文件哈希
+      function verifyFileHashAtOnce(file, algorithm, expectedHash) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          const fileContent = e.target.result;
+          
+          setTimeout(() => {
+            try {
+              let actualHash;
+              
+              // 计算哈希值
+              switch (algorithm) {
+                case 'md5':
+                  actualHash = CryptoJS.MD5(CryptoJS.lib.WordArray.create(fileContent)).toString();
+                  break;
+                case 'sha1':
+                  actualHash = CryptoJS.SHA1(CryptoJS.lib.WordArray.create(fileContent)).toString();
+                  break;
+                case 'sha256':
+                  actualHash = CryptoJS.SHA256(CryptoJS.lib.WordArray.create(fileContent)).toString();
+                  break;
+                case 'sha512':
+                  actualHash = CryptoJS.SHA512(CryptoJS.lib.WordArray.create(fileContent)).toString();
+                  break;
+                case 'sha3':
+                  actualHash = CryptoJS.SHA3(CryptoJS.lib.WordArray.create(fileContent)).toString();
+                  break;
+                case 'ripemd160':
+                  actualHash = CryptoJS.RIPEMD160(CryptoJS.lib.WordArray.create(fileContent)).toString();
+                  break;
+              }
+              
+              // 显示验证结果
+              displayVerificationResult(actualHash, expectedHash);
+            } catch (e) {
+              verifyResult.innerHTML = `<div class="error">验证哈希值时出错: ${e.message}</div>`;
+            }
+          }, 100);
+        };
+        
+        reader.onerror = function() {
+          verifyResult.innerHTML = '<div class="error">读取文件时出错</div>';
+        };
+        
+        reader.readAsArrayBuffer(file);
+      }
+      
+      // 分块验证文件哈希
+      function verifyFileHashInChunks(file, algorithm, expectedHash) {
+        const chunkSize = 2 * 1024 * 1024; // 2MB 块大小
+        const chunks = Math.ceil(file.size / chunkSize);
+        let currentChunk = 0;
+        
+        // 初始化哈希对象
+        let hashObject;
+        
+        switch (algorithm) {
+          case 'md5':
+            hashObject = CryptoJS.algo.MD5.create();
+            break;
+          case 'sha1':
+            hashObject = CryptoJS.algo.SHA1.create();
+            break;
+          case 'sha256':
+            hashObject = CryptoJS.algo.SHA256.create();
+            break;
+          case 'sha512':
+            hashObject = CryptoJS.algo.SHA512.create();
+            break;
+          case 'sha3':
+            hashObject = CryptoJS.algo.SHA3.create();
+            break;
+          case 'ripemd160':
+            hashObject = CryptoJS.algo.RIPEMD160.create();
+            break;
+        }
+        
+        // 读取下一个块
+        function readNextChunk() {
+          const start = currentChunk * chunkSize;
+          const end = Math.min(start + chunkSize, file.size);
+          
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const chunk = e.target.result;
+            
+            // 更新哈希
+            hashObject.update(CryptoJS.lib.WordArray.create(chunk));
+            
+            // 更新进度
+            currentChunk++;
+            const progress = Math.round((currentChunk / chunks) * 100);
+            verifyResult.innerHTML = `<div class="loading"><i class="fa fa-spinner fa-spin"></i> 验证中 ${progress}%</div>`;
+            
+            // 继续读取下一个块或完成
+            if (currentChunk < chunks) {
+              readNextChunk();
+            } else {
+              // 完成所有块的处理
+              const actualHash = hashObject.finalize().toString();
+              
+              // 显示验证结果
+              displayVerificationResult(actualHash, expectedHash);
+            }
+          };
+          
+          reader.onerror = function() {
+            verifyResult.innerHTML = '<div class="error">读取文件块时出错</div>';
+          };
+          
+          const blob = file.slice(start, end);
+          reader.readAsArrayBuffer(blob);
+        }
+        
+        // 开始读取第一个块
+        readNextChunk();
+      }
+      
+      // 显示验证结果
+      function displayVerificationResult(actualHash, expectedHash) {
+        if (actualHash.toLowerCase() === expectedHash.toLowerCase()) {
+          verifyResult.innerHTML = `
+            <div class="verify-success">
+              <i class="fa fa-check-circle"></i> 验证成功！文件哈希值匹配
+              <div class="hash-details">
+                <div><strong>预期哈希值:</strong> ${expectedHash}</div>
+                <div><strong>实际哈希值:</strong> ${actualHash}</div>
+              </div>
+            </div>
+          `;
+        } else {
+          verifyResult.innerHTML = `
+            <div class="verify-failure">
+              <i class="fa fa-times-circle"></i> 验证失败！文件哈希值不匹配
+              <div class="hash-details">
+                <div><strong>预期哈希值:</strong> ${expectedHash}</div>
+                <div><strong>实际哈希值:</strong> ${actualHash}</div>
+              </div>
+            </div>
+          `;
+        }
+      }
+      
+      // 保存到历史记录
+      function saveToHistory(name, results) {
+        // 获取现有历史记录
+        let history = JSON.parse(localStorage.getItem('hashCalculatorHistory') || '[]');
+        
+        // 添加新记录
+        history.unshift({
+          name: name,
+          results: results,
+          timestamp: new Date().toISOString()
+        });
+        
+        // 限制历史记录数量
+        if (history.length > 10) {
+          history = history.slice(0, 10);
+        }
+        
+        // 保存历史记录
+        localStorage.setItem('hashCalculatorHistory', JSON.stringify(history));
       }
       
       // 显示结果
@@ -405,6 +923,14 @@
           html += createResultItem('RIPEMD-160', results.ripemd160);
         }
         
+        if (results.blake2b) {
+          html += createResultItem('BLAKE2b', results.blake2b);
+        }
+        
+        if (results.keccak) {
+          html += createResultItem('Keccak', results.keccak);
+        }
+        
         hashResults.innerHTML = html;
         
         // 添加复制按钮事件
@@ -416,13 +942,57 @@
         });
       }
       
+      // 保存结果到文件
+      function saveResultsToFile() {
+        const resultItems = hashResults.querySelectorAll('.hash-result-item');
+        if (resultItems.length === 0) {
+          showToast('没有可保存的哈希值', 'warning');
+          return;
+        }
+        
+        let content = '';
+        
+        // 添加文件信息
+        if (fileInput.files && fileInput.files[0]) {
+          const file = fileInput.files[0];
+          content += `文件名: ${file.name}\n`;
+          content += `文件大小: ${formatFileSize(file.size)}\n`;
+          content += `计算时间: ${new Date().toLocaleString()}\n\n`;
+        } else {
+          content += `文本哈希计算结果\n`;
+          content += `计算时间: ${new Date().toLocaleString()}\n\n`;
+        }
+        
+        // 添加哈希值
+        resultItems.forEach(item => {
+          const algorithm = item.querySelector('.hash-algorithm').textContent;
+          const hash = item.querySelector('.hash-value').textContent;
+          content += `${algorithm}: ${hash}\n`;
+        });
+        
+        // 创建下载链接
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'hash_results.txt';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showToast('哈希结果已保存到文件', 'success');
+      }
+      
       // 创建结果项
       function createResultItem(algorithm, hash) {
         return `
           <div class="hash-result-item">
             <div class="hash-algorithm">${algorithm}</div>
             <div class="hash-value">${hash}</div>
-            <button class="btn btn-icon btn-sm copy-hash" data-hash="${hash}" title="复制"><i class="fa fa-copy"></i></button>
+            <div class="hash-actions">
+              <button class="btn btn-icon btn-sm copy-hash" data-hash="${hash}" title="复制"><i class="fa fa-copy"></i></button>
+              <button class="btn btn-icon btn-sm verify-hash" data-hash="${hash}" title="验证"><i class="fa fa-check-circle"></i></button>
+            </div>
           </div>
         `;
       }
@@ -445,13 +1015,44 @@
         copyToClipboard(text.trim());
       }
       
+      // 复制到剪贴板
+      function copyToClipboard(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        document.body.appendChild(textarea);
+        textarea.select();
+        
+        try {
+          const successful = document.execCommand('copy');
+          document.body.removeChild(textarea);
+          if (successful) {
+            showToast('已复制到剪贴板', 'success');
+          } else {
+            showToast('复制失败', 'error');
+          }
+        } catch (err) {
+          document.body.removeChild(textarea);
+          showToast('复制失败: ' + err, 'error');
+        }
+      }
+      
+      // 显示提示消息
+      function showToast(message, type = 'info') {
+        if (window.showToast) {
+          window.showToast(message, type);
+        } else {
+          alert(message);
+        }
+      }
+      
       // 事件监听
       calculateBtn.addEventListener('click', () => {
         const activeTab = container.querySelector('.hash-tab-btn.active').getAttribute('data-tab');
         
         if (activeTab === 'text') {
           calculateTextHash();
-        } else {
+        } else if (activeTab === 'file') {
           calculateFileHash();
         }
       });
@@ -465,10 +1066,42 @@
       });
       
       copyAllBtn.addEventListener('click', copyAllHashes);
+      saveResultsBtn.addEventListener('click', saveResultsToFile);
+      clearResultsBtn.addEventListener('click', () => {
+        hashResults.innerHTML = '<div class="no-results">请输入文本或选择文件并计算哈希值</div>';
+      });
+      
+      compareBtn.addEventListener('click', compareHashes);
+      
+      verifyBtn.addEventListener('click', verifyFileHash);
+      
+      // 添加哈希验证事件
+      hashResults.addEventListener('click', (e) => {
+        if (e.target.closest('.verify-hash')) {
+          const btn = e.target.closest('.verify-hash');
+          const hash = btn.getAttribute('data-hash');
+          
+          // 切换到验证标签页
+          tabButtons.forEach(btn => {
+            if (btn.getAttribute('data-tab') === 'verify') {
+              btn.click();
+            }
+          });
+          
+          // 填充哈希值
+          verifyHashInput.value = hash;
+        }
+      });
       
       // 添加样式
       const style = document.createElement('style');
       style.textContent = `
+        .hash-tabs {
+          display: flex;
+          border-bottom: 1px solid var(--border-color);
+          margin-bottom: 15px;
+          overflow-x: auto;
+        }
         .hash-container {
           display: flex;
           flex-wrap: wrap;
@@ -499,6 +1132,7 @@
           border-bottom: 2px solid transparent;
           cursor: pointer;
           transition: var(--transition);
+          white-space: nowrap;
         }
         
         .hash-tab-btn.active {
@@ -597,6 +1231,7 @@
           margin-bottom: 15px;
           padding-bottom: 15px;
           border-bottom: 1px solid var(--border-color);
+          flex-wrap: wrap;
         }
         
         .hash-result-item:last-child {
@@ -608,6 +1243,11 @@
         .hash-algorithm {
           width: 100px;
           font-weight: 500;
+        }
+        
+        .hash-actions {
+          display: flex;
+          gap: 5px;
         }
         
         .hash-value {
@@ -667,9 +1307,136 @@
           margin: 0;
         }
         
+        .progress-container {
+          margin-top: 15px;
+        }
+        
+        .progress {
+          height: 20px;
+          background-color: var(--bg-light);
+          border-radius: 4px;
+          overflow: hidden;
+          margin-top: 5px;
+        }
+        
+        .progress-bar {
+          height: 100%;
+          background-color: var(--primary-color);
+          text-align: center;
+          line-height: 20px;
+          color: white;
+          transition: width 0.3s;
+        }
+        
+        .compare-result {
+          margin-top: 20px;
+        }
+        
+        .compare-match {
+          padding: 15px;
+          background-color: #d4edda;
+          color: #155724;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        
+        .compare-mismatch {
+          padding: 15px;
+          background-color: #f8d7da;
+          color: #721c24;
+          border-radius: 4px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        
+        .diff-details {
+          margin-top: 5px;
+          font-size: 14px;
+        }
+        
+        .hash-diff-container {
+          margin-top: 15px;
+          background-color: var(--card-bg);
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          padding: 15px;
+          font-family: monospace;
+        }
+        
+        .hash-diff-row {
+          margin-bottom: 10px;
+          word-break: break-all;
+        }
+        
+        .hash-diff-row:last-child {
+          margin-bottom: 0;
+        }
+        
+        .hash-label {
+          display: inline-block;
+          width: 60px;
+          font-weight: bold;
+        }
+        
+        .hash-char {
+          display: inline-block;
+          padding: 1px;
+        }
+        
+        .hash-char.diff {
+          background-color: #f8d7da;
+          color: #721c24;
+        }
+        
+        .verify-result {
+          margin-top: 20px;
+        }
+        
+        .verify-success {
+          padding: 15px;
+          background-color: #d4edda;
+          color: #155724;
+          border-radius: 4px;
+        }
+        
+        .verify-failure {
+          padding: 15px;
+          background-color: #f8d7da;
+          color: #721c24;
+          border-radius: 4px;
+        }
+        
+        .hash-details {
+          margin-top: 10px;
+          font-family: monospace;
+          word-break: break-all;
+        }
+        
         @media (max-width: 768px) {
           .hash-container {
             flex-direction: column;
+          }
+          
+          .hash-result-item {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          
+          .hash-algorithm {
+            width: auto;
+            margin-bottom: 5px;
+          }
+          
+          .hash-value {
+            margin-bottom: 10px;
+            padding: 0;
+          }
+          
+          .hash-actions {
+            align-self: flex-end;
           }
         }
       `;
