@@ -1402,6 +1402,12 @@ function setupSettingsPanel() {
   const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
   settingsPanel.querySelector(`.theme-btn[data-theme="${currentTheme}"]`).classList.add('active');
   
+  // 添加自动打开上次工具的设置事件
+  document.getElementById('show-last-tool').addEventListener('change', (e) => {
+    localStorage.setItem('showLastToolOnStartup', e.target.checked);
+    showToast(`已${e.target.checked ? '启用' : '禁用'}自动打开上次使用的工具`, 'success');
+  });
+  
   // 添加导出数据事件
   document.getElementById('export-data-btn').addEventListener('click', () => {
     window.exportUserData();

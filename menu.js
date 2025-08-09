@@ -102,6 +102,15 @@ window.menu = [
       { title: '颜色转换', tool: 'colorConverter' },
       { title: '颜色选择器', tool: 'colorPicker' }
     ]
+  },
+  {
+    title: '测试工具',
+    icon: 'fas fa-vial',
+    count: 2,
+    children: [
+      { title: '简单工具示例', tool: 'simple-tool' },
+      { title: '工具模板', tool: 'tool-template' }
+    ]
   }
 ];
 
