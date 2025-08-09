@@ -1,0 +1,801 @@
+/**
+ * 多宝工具库
+ * 版本: 1.1.0
+ * 最后更新: 2025-08-08
+ */
+
+// 通用工具函数
+const DuobaoUtils = {
+  // 格式化日期
+  formatDate: function(date, format) {
+    const o = {
+      "M+": date.getMonth() + 1,
+      "d+": date.getDate(),
+      "h+": date.getHours(),
+      "m+": date.getMinutes(),
+      "s+": date.getSeconds(),
+      "q+": Math.floor((date.getMonth() + 3) / 3),
+      "S": date.getMilliseconds()
+    };
+
+    if (/(y+)/.test(format)) {
+      format = format.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+    }
+
+    for (let k in o) {
+      if (new RegExp("(" + k + ")").test(format)) {
+        format = format.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+      }
+    }
+
+    return format;
+  },
+
+  // 生成UUID
+  generateUUID: function() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  },
+
+  // 防抖函数
+  debounce: function(func, wait, immediate) {
+    let timeout;
+    return function() {
+      const context = this;
+      const args = arguments;
+      const later = function() {
+        timeout = null;
+        if (!immediate) func.apply(context, args);
+      };
+      const callNow = immediate && !timeout;
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+      if (callNow) func.apply(context, args);
+    };
+  },
+
+  // 节流函数
+  throttle: function(func, wait, options) {
+    let context, args, result;
+    let timeout = null;
+    let previous = 0;
+    if (!options) options = {};
+    const later = function() {
+      previous = options.leading === false ? 0 : Date.now();
+      timeout = null;
+      result = func.apply(context, args);
+      if (!timeout) context = args = null;
+    };
+    return function() {
+      const now = Date.now();
+      if (!previous && options.leading === false) previous = now;
+      const remaining = wait - (now - previous);
+      context = this;
+      args = arguments;
+      if (remaining <= 0 || remaining > wait) {
+        if (timeout) {
+          clearTimeout(timeout);
+          timeout = null;
+        }
+        previous = now;
+        result = func.apply(context, args);
+        if (!timeout) context = args = null;
+      } else if (!timeout && options.trailing !== false) {
+        timeout = setTimeout(later, remaining);
+      }
+      return result;
+    };
+  },
+
+  // 深拷贝
+  deepClone: function(obj) {
+    if (obj === null || typeof obj !== 'object') {
+      return obj;
+    }
+    
+    if (obj instanceof Date) {
+      return new Date(obj.getTime());
+    }
+    
+    if (obj instanceof Array) {
+      return obj.map(item => this.deepClone(item));
+    }
+    
+    if (obj instanceof Object) {
+      const copy = {};
+      Object.keys(obj).forEach(key => {
+        copy[key] = this.deepClone(obj[key]);
+      });
+      return copy;
+    }
+    
+    throw new Error('Unable to copy obj! Its type isn\'t supported.');
+  },
+
+  // 格式化文件大小
+  formatFileSize: function(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+    
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  },
+
+  // 获取URL参数
+  getUrlParam: function(name) {
+    const url = new URL(window.location.href);
+    return url.searchParams.get(name);
+  },
+
+  // 设置URL参数
+  setUrlParam: function(name, value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set(name, value);
+    window.history.replaceState({}, "", url);
+  },
+
+  // 删除URL参数
+  removeUrlParam: function(name) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete(name);
+    window.history.replaceState({}, "", url);
+  },
+
+  // 随机数生成
+  random: function(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  },
+
+  // 随机字符串生成
+  randomString: function(length, chars) {
+    chars = chars || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  },
+
+  // 检查是否为移动设备
+  isMobile: function() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  },
+
+  // 检查是否为特定浏览器
+  isBrowser: function(name) {
+    const userAgent = navigator.userAgent.toLowerCase();
+    
+    switch (name.toLowerCase()) {
+      case 'chrome':
+        return /chrome/.test(userAgent) && !/edge/.test(userAgent);
+      case 'firefox':
+        return /firefox/.test(userAgent);
+      case 'safari':
+        return /safari/.test(userAgent) && !/chrome/.test(userAgent);
+      case 'edge':
+        return /edge/.test(userAgent);
+      case 'ie':
+        return /msie/.test(userAgent) || /trident/.test(userAgent);
+      case 'opera':
+        return /opera/.test(userAgent) || /opr/.test(userAgent);
+      default:
+        return false;
+    }
+  }
+};
+
+// 文件处理工具
+window.DuobaoFile = {
+  // 读取文件内容
+  readAsText: function(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = e => reject(e);
+      reader.readAsText(file);
+    });
+  },
+  
+  // 读取文件为DataURL
+  readAsDataURL: function(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = e => reject(e);
+      reader.readAsDataURL(file);
+    });
+  },
+  
+  // 读取文件为ArrayBuffer
+  readAsArrayBuffer: function(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = e => reject(e);
+      reader.readAsArrayBuffer(file);
+    });
+  },
+  
+  // 保存文本为文件
+  saveAsFile: function(content, filename, type = 'text/plain') {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
+  
+  // 获取文件扩展名
+  getExtension: function(filename) {
+    return filename.slice((filename.lastIndexOf('.') - 1 >>> 0) + 2);
+  },
+  
+  // 获取文件名（不含扩展名）
+  getBasename: function(filename) {
+    return filename.split('.').slice(0, -1).join('.');
+  },
+  
+  // 检查文件类型
+  checkFileType: function(file, allowedTypes) {
+    if (!file || !allowedTypes) return false;
+    
+    // 如果allowedTypes是字符串，转换为数组
+    if (typeof allowedTypes === 'string') {
+      allowedTypes = [allowedTypes];
+    }
+    
+    const fileType = file.type;
+    const extension = this.getExtension(file.name).toLowerCase();
+    
+    // 检查MIME类型
+    for (const type of allowedTypes) {
+      // 检查完整MIME类型
+      if (fileType === type) return true;
+      
+      // 检查MIME类型前缀
+      if (type.endsWith('/*') && fileType.startsWith(type.slice(0, -2))) return true;
+      
+      // 检查文件扩展名
+      if (type.startsWith('.') && extension === type.slice(1)) return true;
+    }
+    
+    return false;
+  },
+  
+  // 检查文件大小
+  checkFileSize: function(file, maxSize) {
+    return file.size <= maxSize;
+  },
+  
+  // 格式化文件大小
+  formatFileSize: function(bytes) {
+    return DuobaoUtils.formatFileSize(bytes);
+  }
+};
+
+// 图像处理工具
+window.DuobaoImage = {
+  // 加载图像
+  load: function(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  },
+  
+  // 调整图像大小
+  resize: function(image, width, height, options = {}) {
+    const { quality = 0.8, type = 'image/jpeg', keepAspectRatio = true } = options;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    let newWidth = width;
+    let newHeight = height;
+    
+    if (keepAspectRatio) {
+      const ratio = Math.min(width / image.width, height / image.height);
+      newWidth = image.width * ratio;
+      newHeight = image.height * ratio;
+    }
+    
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    
+    ctx.drawImage(image, 0, 0, newWidth, newHeight);
+    
+    return canvas.toDataURL(type, quality);
+  },
+  
+  // 裁剪图像
+  crop: function(image, x, y, width, height, options = {}) {
+    const { quality = 0.8, type = 'image/jpeg' } = options;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = width;
+    canvas.height = height;
+    
+    ctx.drawImage(image, x, y, width, height, 0, 0, width, height);
+    
+    return canvas.toDataURL(type, quality);
+  },
+  
+  // 旋转图像
+  rotate: function(image, degrees, options = {}) {
+    const { quality = 0.8, type = 'image/jpeg' } = options;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const radians = degrees * Math.PI / 180;
+    const sin = Math.sin(radians);
+    const cos = Math.cos(radians);
+    
+    // 计算旋转后的尺寸
+    const width = Math.abs(image.width * cos) + Math.abs(image.height * sin);
+    const height = Math.abs(image.width * sin) + Math.abs(image.height * cos);
+    
+    canvas.width = width;
+    canvas.height = height;
+    
+    // 移动到中心点
+    ctx.translate(width / 2, height / 2);
+    
+    // 旋转
+    ctx.rotate(radians);
+    
+    // 绘制图像
+    ctx.drawImage(image, -image.width / 2, -image.height / 2);
+    
+    return canvas.toDataURL(type, quality);
+  },
+  
+  // 翻转图像
+  flip: function(image, horizontal = true, vertical = false, options = {}) {
+    const { quality = 0.8, type = 'image/jpeg' } = options;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = image.width;
+    canvas.height = image.height;
+    
+    ctx.save();
+    
+    // 水平翻转
+    if (horizontal) {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    
+    // 垂直翻转
+    if (vertical) {
+      ctx.translate(0, canvas.height);
+      ctx.scale(1, -1);
+    }
+    
+    ctx.drawImage(image, 0, 0);
+    
+    ctx.restore();
+    
+    return canvas.toDataURL(type, quality);
+  },
+  
+  // 调整亮度
+  adjustBrightness: function(image, value, options = {}) {
+    const { quality = 0.8, type = 'image/jpeg' } = options;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = image.width;
+    canvas.height = image.height;
+    
+    ctx.drawImage(image, 0, 0);
+    
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = Math.min(255, Math.max(0, data[i] + value));
+      data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + value));
+      data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + value));
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+    
+    return canvas.toDataURL(type, quality);
+  },
+  
+  // 调整对比度
+  adjustContrast: function(image, value, options = {}) {
+    const { quality = 0.8, type = 'image/jpeg' } = options;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = image.width;
+    canvas.height = image.height;
+    
+    ctx.drawImage(image, 0, 0);
+    
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    const factor = (259 * (value + 255)) / (255 * (259 - value));
+    
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = Math.min(255, Math.max(0, factor * (data[i] - 128) + 128));
+      data[i + 1] = Math.min(255, Math.max(0, factor * (data[i + 1] - 128) + 128));
+      data[i + 2] = Math.min(255, Math.max(0, factor * (data[i + 2] - 128) + 128));
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+    
+    return canvas.toDataURL(type, quality);
+  },
+  
+  // 应用灰度滤镜
+  grayscale: function(image, options = {}) {
+    const { quality = 0.8, type = 'image/jpeg' } = options;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = image.width;
+    canvas.height = image.height;
+    
+    ctx.drawImage(image, 0, 0);
+    
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+      const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      data[i] = avg;
+      data[i + 1] = avg;
+      data[i + 2] = avg;
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+    
+    return canvas.toDataURL(type, quality);
+  },
+  
+  // 应用反色滤镜
+  invert: function(image, options = {}) {
+    const { quality = 0.8, type = 'image/jpeg' } = options;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = image.width;
+    canvas.height = image.height;
+    
+    ctx.drawImage(image, 0, 0);
+    
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = 255 - data[i];
+      data[i + 1] = 255 - data[i + 1];
+      data[i + 2] = 255 - data[i + 2];
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+    
+    return canvas.toDataURL(type, quality);
+  },
+  
+  // 应用模糊滤镜
+  blur: function(image, radius = 5, options = {}) {
+    const { quality = 0.8, type = 'image/jpeg' } = options;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = image.width;
+    canvas.height = image.height;
+    
+    ctx.filter = `blur(${radius}px)`;
+    ctx.drawImage(image, 0, 0);
+    
+    return canvas.toDataURL(type, quality);
+  },
+  
+  // 获取图像主色调
+  getDominantColor: function(image) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // 缩小图像以提高性能
+    const size = 50;
+    canvas.width = size;
+    canvas.height = size;
+    
+    ctx.drawImage(image, 0, 0, size, size);
+    
+    const imageData = ctx.getImageData(0, 0, size, size);
+    const data = imageData.data;
+    
+    // 颜色计数
+    const colorCounts = {};
+    
+    for (let i = 0; i < data.length; i += 4) {
+      const r = Math.floor(data[i] / 10) * 10;
+      const g = Math.floor(data[i + 1] / 10) * 10;
+      const b = Math.floor(data[i + 2] / 10) * 10;
+      
+      const color = `rgb(${r},${g},${b})`;
+      
+      if (colorCounts[color]) {
+        colorCounts[color]++;
+      } else {
+        colorCounts[color] = 1;
+      }
+    }
+    
+    // 找出出现次数最多的颜色
+    let dominantColor = '';
+    let maxCount = 0;
+    
+    for (const color in colorCounts) {
+      if (colorCounts[color] > maxCount) {
+        maxCount = colorCounts[color];
+        dominantColor = color;
+      }
+    }
+    
+    return dominantColor;
+  }
+};
+
+// 颜色处理工具
+window.DuobaoColor = {
+  // RGB转十六进制
+  rgbToHex: function(r, g, b) {
+    if (typeof r === 'object') {
+      g = r.g;
+      b = r.b;
+      r = r.r;
+    }
+    
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  },
+  
+  // 十六进制转RGB
+  hexToRgb: function(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  },
+  
+  // RGB转HSL
+  rgbToHsl: function(r, g, b) {
+    if (typeof r === 'object') {
+      g = r.g;
+      b = r.b;
+      r = r.r;
+    }
+    
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    
+    if (max === min) {
+      h = s = 0; // 灰色
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      
+      h /= 6;
+    }
+    
+    return {
+      h: Math.round(h * 360),
+      s: Math.round(s * 100),
+      l: Math.round(l * 100)
+    };
+  },
+  
+  // HSL转RGB
+  hslToRgb: function(h, s, l) {
+    if (typeof h === 'object') {
+      s = h.s;
+      l = h.l;
+      h = h.h;
+    }
+    
+    h /= 360;
+    s /= 100;
+    l /= 100;
+    
+    let r, g, b;
+    
+    if (s === 0) {
+      r = g = b = l; // 灰色
+    } else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    
+    return {
+      r: Math.round(r * 255),
+      g: Math.round(g * 255),
+      b: Math.round(b * 255)
+    };
+  },
+  
+  // RGB转CMYK
+  rgbToCmyk: function(r, g, b) {
+    if (typeof r === 'object') {
+      g = r.g;
+      b = r.b;
+      r = r.r;
+    }
+    
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    
+    const k = 1 - Math.max(r, g, b);
+    const c = (1 - r - k) / (1 - k) || 0;
+    const m = (1 - g - k) / (1 - k) || 0;
+    const y = (1 - b - k) / (1 - k) || 0;
+    
+    return {
+      c: Math.round(c * 100),
+      m: Math.round(m * 100),
+      y: Math.round(y * 100),
+      k: Math.round(k * 100)
+    };
+  },
+  
+  // CMYK转RGB
+  cmykToRgb: function(c, m, y, k) {
+    if (typeof c === 'object') {
+      m = c.m;
+      y = c.y;
+      k = c.k;
+      c = c.c;
+    }
+    
+    c /= 100;
+    m /= 100;
+    y /= 100;
+    k /= 100;
+    
+    const r = 255 * (1 - c) * (1 - k);
+    const g = 255 * (1 - m) * (1 - k);
+    const b = 255 * (1 - y) * (1 - k);
+    
+    return {
+      r: Math.round(r),
+      g: Math.round(g),
+      b: Math.round(b)
+    };
+  },
+  
+  // 生成互补色
+  getComplementaryColor: function(hex) {
+    const rgb = this.hexToRgb(hex);
+    const hsl = this.rgbToHsl(rgb.r, rgb.g, rgb.b);
+    
+    hsl.h = (hsl.h + 180) % 360;
+    
+    const complementaryRgb = this.hslToRgb(hsl.h, hsl.s, hsl.l);
+    
+    return this.rgbToHex(complementaryRgb.r, complementaryRgb.g, complementaryRgb.b);
+  },
+  
+  // 生成类似色
+  getAnalogousColors: function(hex, count = 2, angle = 30) {
+    const rgb = this.hexToRgb(hex);
+    const hsl = this.rgbToHsl(rgb.r, rgb.g, rgb.b);
+    const colors = [];
+    
+    for (let i = 1; i <= count; i++) {
+      const newHsl = { ...hsl };
+      newHsl.h = (hsl.h + angle * i) % 360;
+      
+      const newRgb = this.hslToRgb(newHsl.h, newHsl.s, newHsl.l);
+      colors.push(this.rgbToHex(newRgb.r, newRgb.g, newRgb.b));
+    }
+    
+    return colors;
+  },
+  
+  // 生成三元色
+  getTriadicColors: function(hex) {
+    const rgb = this.hexToRgb(hex);
+    const hsl = this.rgbToHsl(rgb.r, rgb.g, rgb.b);
+    
+    const colors = [];
+    
+    for (let i = 1; i <= 2; i++) {
+      const newHsl = { ...hsl };
+      newHsl.h = (hsl.h + 120 * i) % 360;
+      
+      const newRgb = this.hslToRgb(newHsl.h, newHsl.s, newHsl.l);
+      colors.push(this.rgbToHex(newRgb.r, newRgb.g, newRgb.b));
+    }
+    
+    return colors;
+  },
+  
+  // 生成色调变化
+  getTints: function(hex, count = 5) {
+    const rgb = this.hexToRgb(hex);
+    const hsl = this.rgbToHsl(rgb.r, rgb.g, rgb.b);
+    const tints = [];
+    
+    const step = (100 - hsl.l) / (count + 1);
+    
+    for (let i = 1; i <= count; i++) {
+      const newHsl = { ...hsl };
+      newHsl.l = Math.min(100, hsl.l + step * i);
+      
+      const newRgb = this.hslToRgb(newHsl.h, newHsl.s, newHsl.l);
+      tints.push(this.rgbToHex(newRgb.r, newRgb.g, newRgb.b));
+    }
+    
+    return tints;
+  },
+  
+  // 生成色度变化
+  getShades: function(hex, count = 5) {
+    const rgb = this.hexToRgb(hex);
+    const hsl = this.rgbToHsl(rgb.r, rgb.g, rgb.b);
+    const shades = [];
+    
+    const step = hsl.l / (count + 1);
+    
+    for (let i = 1; i <= count; i++) {
+      const newHsl = { ...hsl };
+      newHsl.l = Math.max(0, hsl.l - step * i);
+      
+      const newRgb = this.hslToRgb(newHsl.h, newHsl.s, newHsl.l);
+      shades.push(this.rgbToHex(newRgb.r, newRgb.g,

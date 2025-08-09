@@ -1,488 +1,496 @@
 /**
  * 贷款计算器 - 图表模块
  */
-
-// 图表功能
-const LoanCharts = {
-  /**
-   * 显示还款构成图表
-   * @param {Array} schedule - 还款计划数组
-   * @param {HTMLCanvasElement} canvas - Canvas元素
-   * @returns {Chart} 图表实例
-   */
-  displayPaymentChart: function(schedule, canvas) {
-    // 准备图表数据
-    const labels = schedule.map(item => item.period);
-    const principalData = schedule.map(item => item.principal);
-    const interestData = schedule.map(item => item.interest);
-    const remainingData = schedule.map(item => item.remainingPrincipal);
-    
-    // 创建图表
-    const ctx = canvas.getContext('2d');
-    return new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: '本金',
-            data: principalData,
-            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-          },
-          {
-            label: '利息',
-            data: interestData,
-            backgroundColor: 'rgba(255, 99, 132, 0.7)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1
-          },
-          {
-            label: '剩余本金',
-            data: remainingData,
-            type: 'line',
-            fill: false,
-            borderColor: 'rgba(75, 192, 192, 1)',
-            tension: 0.1,
-            yAxisID: 'y1'
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            stacked: true,
-            title: {
-              display: true,
-              text: '期数'
-            }
-          },
-          y: {
-            stacked: true,
-            title: {
-              display: true,
-              text: '金额 (元)'
-            }
-          },
-          y1: {
-            position: 'right',
-            grid: {
-              drawOnChartArea: false
-            },
-            title: {
-              display: true,
-              text: '剩余本金 (元)'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return context.dataset.label + ': ' + LoanUtils.formatCurrency(context.raw);
-              }
-            }
-          }
-        }
-      }
-    });
-  },
-  
-  /**
-   * 显示本金余额图表
-   * @param {Array} schedule - 还款计划数组
-   * @param {HTMLCanvasElement} canvas - Canvas元素
-   * @returns {Chart} 图表实例
-   */
-  displayBalanceChart: function(schedule, canvas) {
-    // 准备图表数据
-    const labels = schedule.map(item => item.period);
-    const remainingData = schedule.map(item => item.remainingPrincipal);
-    const paidData = schedule.map((item, index, array) => {
-      if (index === 0) {
-        return array[0].principal;
-      } else {
-        return array[0].remainingPrincipal - item.remainingPrincipal;
-      }
-    });
-    
-    // 创建图表
-    const ctx = canvas.getContext('2d');
-    return new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: '已还本金',
-            data: paidData,
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 2,
-            fill: true
-          },
-          {
-            label: '剩余本金',
-            data: remainingData,
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 2,
-            fill: true
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: '期数'
-            }
-          },
-          y: {
-            title: {
-              display: true,
-              text: '金额 (元)'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return context.dataset.label + ': ' + LoanUtils.formatCurrency(context.raw);
-              }
-            }
-          }
-        }
-      }
-    });
-  },
-  
-  /**
-   * 显示本息比例图表
-   * @param {Array} schedule - 还款计划数组
-   * @param {HTMLCanvasElement} canvas - Canvas元素
-   * @returns {Chart} 图表实例
-   */
-  displayRatioChart: function(schedule, canvas) {
-    // 计算总本金和总利息
-    const totalPrincipal = schedule.reduce((sum, item) => sum + item.principal, 0);
-    const totalInterest = schedule.reduce((sum, item) => sum + item.interest, 0);
-    
-    // 创建图表
-    const ctx = canvas.getContext('2d');
-    return new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: ['本金', '利息'],
-        datasets: [{
-          data: [totalPrincipal, totalInterest],
-          backgroundColor: [
-            'rgba(54, 162, 235, 0.7)',
-            'rgba(255, 99, 132, 0.7)'
-          ],
-          borderColor: [
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 99, 132, 1)'
-          ],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const label = context.label || '';
-                const value = LoanUtils.formatCurrency(context.raw);
-                const percentage = (context.raw / (totalPrincipal + totalInterest) * 100).toFixed(2) + '%';
-                return `${label}: ${value} (${percentage})`;
-              }
-            }
-          }
-        }
-      }
-    });
-  },
-  
-  /**
-   * 显示组合贷款图表
-   * @param {Array} schedule - 组合贷款还款计划数组
-   * @param {HTMLCanvasElement} canvas - Canvas元素
-   * @returns {Chart} 图表实例
-   */
-  displayCombinedChart: function(schedule, canvas) {
-    // 准备图表数据
-    const labels = schedule.map(item => item.period);
-    const cPaymentData = schedule.map(item => item.cPayment || 0);
-    const hPaymentData = schedule.map(item => item.hPayment || 0);
-    const remainingData = schedule.map(item => item.remainingPrincipal);
-    
-    // 创建图表
-    const ctx = canvas.getContext('2d');
-    return new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: '商业贷款月供',
-            data: cPaymentData,
-            backgroundColor: 'rgba(255, 99, 132, 0.7)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1
-          },
-          {
-            label: '公积金贷款月供',
-            data: hPaymentData,
-            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-          },
-          {
-            label: '剩余本金',
-            data: remainingData,
-            type: 'line',
-            fill: false,
-            borderColor: 'rgba(75, 192, 192, 1)',
-            tension: 0.1,
-            yAxisID: 'y1'
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            stacked: true,
-            title: {
-              display: true,
-              text: '期数'
-            }
-          },
-          y: {
-            stacked: true,
-            title: {
-              display: true,
-              text: '金额 (元)'
-            }
-          },
-          y1: {
-            position: 'right',
-            grid: {
-              drawOnChartArea: false
-            },
-            title: {
-              display: true,
-              text: '剩余本金 (元)'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return context.dataset.label + ': ' + LoanUtils.formatCurrency(context.raw);
-              }
-            }
-          }
-        }
-      }
-    });
-  },
-  
-  /**
-   * 显示提前还款对比图表
-   * @param {object} result - 提前还款计算结果
-   * @param {HTMLCanvasElement} canvas - Canvas元素
-   * @returns {Chart} 图表实例
-   */
-  displayPrepaymentChart: function(result, canvas) {
-    // 准备图表数据
-    const originalData = [];
-    const newData = [];
-    const labels = [];
-    
-    // 已还期数
-    const paidCount = result.paidSchedule.length;
-    
-    // 设置标签和数据
-    for (let i = 1; i <= Math.max(result.originalSchedule.length, paidCount + result.newSchedule.length); i++) {
-      labels.push(i);
+(function() {
+  // 定义图表模块
+  const LoanCharts = {
+    // 显示还款曲线图
+    displayPaymentChart: function(schedule, container) {
+      // 准备数据
+      const labels = schedule.map(payment => payment.month);
+      const principalData = schedule.map(payment => payment.principal);
+      const interestData = schedule.map(payment => payment.interest);
       
-      // 原始计划数据
-      if (i <= result.originalSchedule.length) {
-        originalData.push(result.originalSchedule[i - 1].payment);
-      } else {
-        originalData.push(null);
+      // 创建图表
+      const ctx = container.getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: '本金',
+              data: principalData,
+              backgroundColor: 'rgba(54, 162, 235, 0.7)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            },
+            {
+              label: '利息',
+              data: interestData,
+              backgroundColor: 'rgba(255, 99, 132, 0.7)',
+              borderColor: 'rgba(255, 99, 132, 1)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              stacked: true,
+              title: {
+                display: true,
+                text: '期数'
+              },
+              ticks: {
+                maxTicksLimit: 20
+              }
+            },
+            y: {
+              stacked: true,
+              title: {
+                display: true,
+                text: '金额 (元)'
+              }
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: '月供构成'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return label + ': ' + LoanUtils.formatCurrency(value);
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      return chart;
+    },
+    
+    // 显示余额曲线图
+    displayBalanceChart: function(schedule, container) {
+      // 准备数据
+      const labels = schedule.map(payment => payment.month);
+      const balanceData = schedule.map(payment => payment.balance);
+      
+      // 创建图表
+      const ctx = container.getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: '剩余本金',
+              data: balanceData,
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 2,
+              tension: 0.1,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: '期数'
+              },
+              ticks: {
+                maxTicksLimit: 20
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: '剩余本金 (元)'
+              },
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: '剩余本金变化曲线'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return label + ': ' + LoanUtils.formatCurrency(value);
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      return chart;
+    },
+    
+    // 显示本息比例图
+    displayRatioChart: function(schedule, container) {
+      // 计算总本金和总利息
+      let totalPrincipal = 0;
+      let totalInterest = 0;
+      
+      schedule.forEach(payment => {
+        totalPrincipal += payment.principal;
+        totalInterest += payment.interest;
+      });
+      
+      // 创建图表
+      const ctx = container.getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['本金', '利息'],
+          datasets: [
+            {
+              data: [totalPrincipal, totalInterest],
+              backgroundColor: [
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 99, 132, 0.7)'
+              ],
+              borderColor: [
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 99, 132, 1)'
+              ],
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: '本金与利息比例'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = Math.round((value / total) * 100);
+                  return label + ': ' + LoanUtils.formatCurrency(value) + ' (' + percentage + '%)';
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      return chart;
+    },
+    
+    // 显示组合贷款比较图
+    displayCombinedComparisonChart: function(commercialResult, housingResult, container) {
+      // 准备数据
+      const labels = ['总还款额', '总利息'];
+      const commercialData = [commercialResult.totalPayment, commercialResult.totalInterest];
+      const housingData = [housingResult.totalPayment, housingResult.totalInterest];
+      
+      // 创建图表
+      const ctx = container.getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: '商业贷款',
+              data: commercialData,
+              backgroundColor: 'rgba(255, 99, 132, 0.7)',
+              borderColor: 'rgba(255, 99, 132, 1)',
+              borderWidth: 1
+            },
+            {
+              label: '公积金贷款',
+              data: housingData,
+              backgroundColor: 'rgba(54, 162, 235, 0.7)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: '金额 (元)'
+              }
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: '组合贷款比较'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return label + ': ' + LoanUtils.formatCurrency(value);
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      return chart;
+    },
+    
+    // 显示提前还款比较图
+    displayPrepaymentComparisonChart: function(originalSchedule, newSchedule, alreadyPaid, prepaymentAmount, container) {
+      // 准备数据
+      const originalMonthlyPayments = originalSchedule.map(payment => payment.payment);
+      const newMonthlyPayments = [];
+      
+      // 添加已还期数的月供
+      for (let i = 0; i < alreadyPaid; i++) {
+        newMonthlyPayments.push(originalSchedule[i].payment);
       }
       
-      // 提前还款后的计划数据
-      if (i <= paidCount) {
-        // 已还款部分
-        newData.push(result.originalSchedule[i - 1].payment);
-      } else if (i === paidCount + 1) {
-        // 提前还款
-        newData.push(result.prepaymentAmount);
-      } else if (i <= paidCount + result.newSchedule.length + 1) {
-        // 新还款计划
-        newData.push(result.newSchedule[i - paidCount - 2]?.payment || null);
-      } else {
-        newData.push(null);
-      }
+      // 添加提前还款
+      newMonthlyPayments.push(prepaymentAmount);
+      
+      // 添加新还款计划的月供
+      newSchedule.forEach(payment => {
+        newMonthlyPayments.push(payment.payment);
+      });
+      
+      // 创建图表
+      const ctx = container.getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array.from({ length: Math.max(originalMonthlyPayments.length, newMonthlyPayments.length) }, (_, i) => i + 1),
+          datasets: [
+            {
+              label: '原还款计划',
+              data: originalMonthlyPayments,
+              backgroundColor: 'rgba(255, 99, 132, 0.2)',
+              borderColor: 'rgba(255, 99, 132, 1)',
+              borderWidth: 2,
+              tension: 0.1
+            },
+            {
+              label: '提前还款后',
+              data: newMonthlyPayments,
+              backgroundColor: 'rgba(54, 162, 235, 0.2)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 2,
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: '期数'
+              },
+              ticks: {
+                maxTicksLimit: 20
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: '月供 (元)'
+              },
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: '提前还款比较'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return label + ': ' + LoanUtils.formatCurrency(value);
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      return chart;
+    },
+    
+    // 显示贷款方案比较图
+    displayLoanComparisonChart: function(results, container) {
+      // 准备数据
+      const labels = results.map(result => `${result.type}-${result.method}`);
+      const totalPaymentData = results.map(result => result.totalPayment);
+      const totalInterestData = results.map(result => result.totalInterest);
+      const principalData = results.map(result => result.amount);
+      
+      // 创建图表
+      const ctx = container.getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: '本金',
+              data: principalData,
+              backgroundColor: 'rgba(75, 192, 192, 0.7)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            },
+            {
+              label: '利息',
+              data: totalInterestData,
+              backgroundColor: 'rgba(255, 99, 132, 0.7)',
+              borderColor: 'rgba(255, 99, 132, 1)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: '贷款方案'
+              }
+            },
+            y: {
+              stacked: true,
+              title: {
+                display: true,
+                text: '金额 (元)'
+              },
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: '贷款方案比较'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return label + ': ' + LoanUtils.formatCurrency(value);
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      return chart;
+    },
+    
+    // 显示月供比较图
+    displayMonthlyPaymentComparisonChart: function(results, container) {
+      // 准备数据
+      const labels = results.map(result => `${result.type}-${result.method}`);
+      const firstPaymentData = results.map(result => result.firstPayment);
+      const lastPaymentData = results.map(result => result.lastPayment);
+      
+      // 创建图表
+      const ctx = container.getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: '首月月供',
+              data: firstPaymentData,
+              backgroundColor: 'rgba(54, 162, 235, 0.7)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            },
+            {
+              label: '末月月供',
+              data: lastPaymentData,
+              backgroundColor: 'rgba(255, 206, 86, 0.7)',
+              borderColor: 'rgba(255, 206, 86, 1)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: '贷款方案'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: '月供 (元)'
+              },
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: '月供比较'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return label + ': ' + LoanUtils.formatCurrency(value);
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      return chart;
     }
-    
-    // 创建图表
-    const ctx = canvas.getContext('2d');
-    return new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: '原还款计划',
-            data: originalData,
-            borderColor: 'rgba(255, 99, 132, 1)',
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            borderWidth: 2,
-            fill: false
-          },
-          {
-            label: '提前还款后计划',
-            data: newData,
-            borderColor: 'rgba(54, 162, 235, 1)',
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderWidth: 2,
-            fill: false
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: '期数'
-            }
-          },
-          y: {
-            title: {
-              display: true,
-              text: '金额 (元)'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return context.dataset.label + ': ' + LoanUtils.formatCurrency(context.raw || 0);
-              }
-            }
-          }
-        }
-      }
-    });
-  },
+  };
   
-  /**
-   * 显示贷款方案比较图表
-   * @param {Array} results - 比较结果数组
-   * @param {HTMLCanvasElement} canvas - Canvas元素
-   * @returns {Chart} 图表实例
-   */
-  displayCompareChart: function(results, canvas) {
-    // 准备图表数据
-    const labels = results.map(item => item.name);
-    const monthlyPaymentData = results.map(item => item.monthlyPayment);
-    const totalInterestData = results.map(item => item.totalInterest);
-    const totalPaymentData = results.map(item => item.totalPayment);
-    
-    // 创建图表
-    const ctx = canvas.getContext('2d');
-    return new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: '月供',
-            data: monthlyPaymentData,
-            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1,
-            yAxisID: 'y'
-          },
-          {
-            label: '总利息',
-            data: totalInterestData,
-            backgroundColor: 'rgba(255, 99, 132, 0.7)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1,
-            yAxisID: 'y1'
-          },
-          {
-            label: '总还款额',
-            data: totalPaymentData,
-            backgroundColor: 'rgba(75, 192, 192, 0.7)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1,
-            yAxisID: 'y1'
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: '贷款方案'
-            }
-          },
-          y: {
-            position: 'left',
-            title: {
-              display: true,
-              text: '月供 (元)'
-            }
-          },
-          y1: {
-            position: 'right',
-            grid: {
-              drawOnChartArea: false
-            },
-            title: {
-              display: true,
-              text: '总金额 (元)'
-            }
-          }
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return context.dataset.label + ': ' + LoanUtils.formatCurrency(context.raw);
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-};
-
-// 导出模块
-window.LoanCharts = LoanCharts;
+  // 导出模块
+  window.LoanCharts = LoanCharts;
+})();

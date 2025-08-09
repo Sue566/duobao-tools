@@ -249,28 +249,57 @@ kbd {
 }
 
 #menu .cat {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 10px 15px;
   cursor: pointer;
   font-weight: 500;
   transition: var(--transition);
   border-left: 3px solid transparent;
+  position: relative;
 }
 
 #menu .cat:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-#menu .cat i {
+#menu .cat i:first-child {
   margin-right: 10px;
   width: 20px;
   text-align: center;
 }
 
+#menu .cat > div {
+  display: flex;
+  align-items: center;
+}
+
+#menu .cat .menu-arrow {
+  margin-left: 5px;
+  transition: transform 0.3s;
+}
+
+#menu .cat .menu-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+#menu .tool-count {
+  background-color: var(--primary-color-light);
+  color: var(--primary-color);
+  font-size: 12px;
+  font-weight: 400;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+  margin-left: 8px;
+}
+
 #menu > li > ul {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.5s ease;
+  transition: max-height 0.3s ease, opacity 0.2s ease, visibility 0s linear 0.3s;
   padding-left: 15px;
   opacity: 0;
   visibility: hidden;
@@ -280,6 +309,7 @@ kbd {
   max-height: 2000px; /* 增加最大高度，确保所有子菜单项都能显示 */
   opacity: 1;
   visibility: visible;
+  transition: max-height 0.5s ease, opacity 0.3s ease, visibility 0s linear;
 }
 
 #menu ul li {

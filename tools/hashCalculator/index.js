@@ -24,7 +24,7 @@ const tool = {
   loadCryptoJS: function() {
     if (!window.CryptoJS) {
       const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
+      script.src = '/static/js/vendor/crypto-js.min.js';
       document.head.appendChild(script);
       
       script.onload = () => {

@@ -6,7 +6,12 @@ function loadMenu() {
   const list = document.getElementById('menu');
   window.menu.forEach(cat => {
     const li = document.createElement('li');
-    li.innerHTML = `<span class="cat"><i class="fa ${getCategoryIcon(cat.title)}"></i> ${cat.title}</span>`;
+    const iconClass = cat.icon || getCategoryIcon(cat.title);
+    const toolCount = cat.count || cat.children.length;
+    li.innerHTML = `<span class="cat">
+      <div><i class="${iconClass}"></i> ${cat.title}</div>
+      <div><span class="tool-count">${toolCount}</span> <i class="fas fa-chevron-down menu-arrow"></i></div>
+    </span>`;
     const ul = document.createElement('ul');
     cat.children.forEach(child => {
       const item = document.createElement('li');
@@ -44,129 +49,247 @@ function loadMenu() {
     });
   });
   
-  // 展开/折叠分类
-  document.querySelectorAll('.cat').forEach((cat, index) => {
-    cat.addEventListener('click', function(e) {
-      // 阻止事件冒泡
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const ul = this.nextElementSibling;
-      if (!ul) return; // 防止空引用错误
-      
-      // 检查子菜单数量
-      const childCount = ul.querySelectorAll('li').length;
-      console.log('菜单:', this.textContent.trim(), '子菜单数量:', childCount);
-      
-      // 如果没有子菜单，不执行展开/折叠操作
-      if (childCount === 0) {
-        console.log('该菜单没有子菜单，跳过展开/折叠操作');
-        return;
-      }
-      
-      const isExpanded = ul.classList.contains('expanded');
-      console.log('点击菜单:', this.textContent.trim(), '当前状态:', isExpanded ? '已展开' : '已折叠');
-      
-      // 关闭所有其他分类
-      document.querySelectorAll('#menu > li > ul').forEach(menu => {
-        if (menu !== ul) {
-          menu.style.maxHeight = '0px';
-          menu.classList.remove('expanded');
-          menu.style.opacity = '0';
-          menu.style.visibility = 'hidden';
-        }
-      });
-      
-      // 切换当前分类
-      if (!isExpanded) {
-        // 确保设置足够大的高度
-        ul.classList.add('expanded');
-        ul.style.maxHeight = '10000px'; // 设置一个更大的值，确保所有子菜单都能显示
-        ul.style.opacity = '1';
-        ul.style.visibility = 'visible';
-        
-        // 确保在动画完成后重新计算高度（处理动态内容）
-        setTimeout(() => {
-          if (ul.classList.contains('expanded')) {
-            const scrollHeight = ul.scrollHeight;
-            ul.style.maxHeight = (scrollHeight + 100) + 'px'; // 添加更多额外空间，防止内容被截断
-            console.log('展开菜单，高度:', scrollHeight, '设置高度:', ul.style.maxHeight);
-          }
-        }, 200); // 增加延迟时间，确保DOM已完全渲染
-      } else {
-        ul.style.maxHeight = '0px';
-        ul.classList.remove('expanded');
-        ul.style.opacity = '0';
-        ul.style.visibility = 'hidden';
-        console.log('折叠菜单');
+  // 展开/折叠分类 - 使用事件委托
+  document.getElementById('menu').addEventListener('click', function(e) {
+    // 检查点击的是否是菜单分类标题或其子元素
+    const cat = e.target.closest('.cat');
+    if (!cat) return; // 如果不是点击的菜单分类，直接返回
+    
+    // 如果点击的是链接，不处理展开/折叠
+    if (e.target.tagName === 'A' || e.target.closest('a')) {
+      return;
+    }
+    
+    // 阻止事件冒泡
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // 获取父级li元素
+    const li = cat.closest('li');
+    if (!li) return;
+    
+    // 获取子菜单ul元素
+    const ul = li.querySelector('ul');
+    if (!ul) return; // 防止空引用错误
+    
+    // 检查子菜单数量
+    const childCount = ul.querySelectorAll('li').length;
+    console.log('菜单:', cat.textContent.trim(), '子菜单数量:', childCount);
+    
+    // 如果没有子菜单，不执行展开/折叠操作
+    if (childCount === 0) {
+      console.log('该菜单没有子菜单，跳过展开/折叠操作');
+      return;
+    }
+    
+    const isExpanded = ul.classList.contains('expanded');
+    console.log('点击菜单:', cat.textContent.trim(), '当前状态:', isExpanded ? '已展开' : '已折叠');
+    
+    // 关闭所有其他分类
+    document.querySelectorAll('#menu > li').forEach(otherLi => {
+      if (otherLi !== li) {
+        collapseMenu(otherLi);
       }
     });
     
-    // 默认展开第一个分类
-    if (index === 0) {
-      const ul = cat.nextElementSibling;
-      if (ul) {
-        setTimeout(() => {
-          ul.classList.add('expanded');
-          ul.style.maxHeight = '10000px'; // 设置一个足够大的值
-          ul.style.opacity = '1';
-          ul.style.visibility = 'visible';
-          
-          setTimeout(() => {
-            if (ul.classList.contains('expanded')) {
-              const scrollHeight = ul.scrollHeight;
-              ul.style.maxHeight = (scrollHeight + 100) + 'px';
-              console.log('默认展开第一个菜单，高度:', scrollHeight);
-            }
-          }, 200);
-        }, 300); // 增加延迟时间，确保DOM已完全渲染
-      }
+    // 切换当前分类
+    if (!isExpanded) {
+      expandMenu(li);
+    } else {
+      collapseMenu(li);
     }
   });
+  
+// 保存菜单展开状态
+function saveMenuState() {
+  const expandedMenus = [];
+  document.querySelectorAll('#menu > li').forEach((li, index) => {
+    const ul = li.querySelector('ul');
+    if (ul && ul.classList.contains('expanded')) {
+      expandedMenus.push(index);
+    }
+  });
+  
+  try {
+    localStorage.setItem('expandedMenus', JSON.stringify(expandedMenus));
+  } catch (e) {
+    console.error('保存菜单状态失败:', e);
+  }
+}
+
+// 恢复菜单展开状态
+function restoreMenuState() {
+  try {
+    const expandedMenus = JSON.parse(localStorage.getItem('expandedMenus')) || [];
+    document.querySelectorAll('#menu > li').forEach((li, index) => {
+      if (expandedMenus.includes(index)) {
+        expandMenu(li);
+      }
+    });
+  } catch (e) {
+    console.error('恢复菜单状态失败:', e);
+  }
+}
+
+// 辅助函数：展开指定菜单
+function expandMenu(li) {
+  if (!li) return;
+  
+  const cat = li.querySelector('.cat');
+  const ul = li.querySelector('ul');
+  
+  if (!cat || !ul) return;
+  
+  // 展开菜单
+  ul.classList.add('expanded');
+  ul.style.maxHeight = '10000px'; // 设置一个足够大的值
+  ul.style.opacity = '1';
+  ul.style.visibility = 'visible';
+  
+  // 添加旋转箭头类
+  const arrow = cat.querySelector('.menu-arrow');
+  if (arrow) {
+    arrow.classList.add('rotated');
+  }
+  
+  // 计算实际高度
+  setTimeout(() => {
+    if (ul.classList.contains('expanded')) {
+      const scrollHeight = ul.scrollHeight;
+      ul.style.maxHeight = (scrollHeight + 100) + 'px';
+      console.log('展开菜单:', cat.textContent.trim(), '高度:', scrollHeight);
+    }
+  }, 200);
+  
+  // 保存菜单状态
+  saveMenuState();
+}
+
+// 辅助函数：折叠指定菜单
+function collapseMenu(li) {
+  if (!li) return;
+  
+  const cat = li.querySelector('.cat');
+  const ul = li.querySelector('ul');
+  
+  if (!cat || !ul) return;
+  
+  // 折叠菜单
+  ul.classList.remove('expanded');
+  ul.style.maxHeight = '0px';
+  ul.style.opacity = '0';
+  ul.style.visibility = 'hidden';
+  
+  // 移除旋转箭头类
+  const arrow = cat.querySelector('.menu-arrow');
+  if (arrow) {
+    arrow.classList.remove('rotated');
+  }
+  
+  console.log('折叠菜单:', cat.textContent.trim());
+  
+  // 保存菜单状态
+  saveMenuState();
+}
+  
+  // 恢复菜单状态或默认展开第一个分类
+  setTimeout(() => {
+    try {
+      const expandedMenus = JSON.parse(localStorage.getItem('expandedMenus')) || [];
+      if (expandedMenus.length > 0) {
+        // 恢复保存的菜单状态
+        restoreMenuState();
+      } else {
+        // 如果没有保存的状态，默认展开第一个分类
+        const firstLi = document.querySelector('#menu > li:first-child');
+        expandMenu(firstLi);
+      }
+    } catch (e) {
+      console.error('恢复菜单状态失败，默认展开第一个菜单:', e);
+      const firstLi = document.querySelector('#menu > li:first-child');
+      expandMenu(firstLi);
+    }
+  }, 300); // 增加延迟时间，确保DOM已完全渲染
   
   // 加载所有工具
   loadAllTools(window.menu);
   
-  // 根据URL加载指定工具
+  // 监听URL哈希变化
+  window.addEventListener('hashchange', handleHashChange);
+  
+  // 初始处理URL
+  handleHashChange();
+}
+
+// 保存最后访问的工具
+function saveLastVisitedTool(toolId) {
+  if (!toolId) return;
+  
+  try {
+    localStorage.setItem('lastVisitedTool', toolId);
+  } catch (e) {
+    console.error('保存最后访问的工具失败:', e);
+  }
+}
+
+// 获取最后访问的工具
+function getLastVisitedTool() {
+  try {
+    return localStorage.getItem('lastVisitedTool');
+  } catch (e) {
+    console.error('获取最后访问的工具失败:', e);
+    return null;
+  }
+}
+
+// 处理URL哈希变化
+function handleHashChange() {
   if (window.location.hash) {
-    const toolId = window.location.hash.substring(6); // 去掉 #tool- 前缀
-    showTool(toolId);
-    
-    // 设置活动状态
-    const activeLink = document.querySelector(`#menu a[data-tool="${toolId}"]`);
-    if (activeLink) {
-      activeLink.classList.add('active');
-      
-      // 展开包含活动链接的分类
-      const parentUl = activeLink.closest('ul');
-      if (parentUl) {
-        parentUl.style.maxHeight = parentUl.scrollHeight + 'px';
-        parentUl.classList.add('expanded');
-      }
+    if (window.location.hash.startsWith('#tool-')) {
+      const toolId = window.location.hash.substring(6); // 去掉 #tool- 前缀
+      showTool(toolId);
+      saveLastVisitedTool(toolId);
     }
   } else {
-    // 默认显示首页
-    showHomepage();
+    // 检查是否有最后访问的工具
+    const lastTool = getLastVisitedTool();
+    const showLastTool = localStorage.getItem('showLastToolOnStartup') === 'true';
+    
+    if (lastTool && showLastTool) {
+      // 自动打开最后访问的工具
+      window.location.hash = `tool-${lastTool}`;
+    } else {
+      // 默认显示首页
+      showHomepage();
+    }
   }
 }
 
 // 获取分类图标
 function getCategoryIcon(category) {
+  // 直接从菜单数据中获取图标
+  for (const item of window.menu) {
+    if (item.title === category && item.icon) {
+      return item.icon;
+    }
+  }
+  
+  // 如果没有在菜单数据中找到，使用默认图标映射
   const iconMap = {
-    '文本处理': 'fa-file-text-o',
-    '编码转换': 'fa-exchange',
-    '图片工具': 'fa-picture-o',
-    '开发工具': 'fa-code',
-    '日期时间': 'fa-calendar',
-    '数字计算': 'fa-calculator',
-    '格式化工具': 'fa-indent',
-    '加密解密': 'fa-lock',
-    '网络工具': 'fa-globe',
-    '生活工具': 'fa-life-ring',
-    '颜色工具': 'fa-paint-brush'
+    '文本处理': 'fas fa-font',
+    '编码转换': 'fas fa-exchange-alt',
+    '图片工具': 'fas fa-image',
+    '开发工具': 'fas fa-code',
+    '日期时间': 'fas fa-calendar-alt',
+    '数字计算': 'fas fa-calculator',
+    '格式化工具': 'fas fa-indent',
+    '加密解密': 'fas fa-lock',
+    '网络工具': 'fas fa-globe',
+    '生活工具': 'fas fa-heart',
+    '颜色工具': 'fas fa-palette'
   };
   
-  return iconMap[category] || 'fa-wrench';
+  return iconMap[category] || 'fas fa-wrench';
 }
 
 // 获取工具图标
@@ -217,6 +340,26 @@ function getToolIcon(tool) {
   return iconMap[tool] || 'fa-wrench';
 }
 
+// 根据工具ID查找并展开对应的菜单
+function expandMenuByToolId(toolId) {
+  // 查找包含该工具的菜单项
+  const menuItem = document.querySelector(`#menu a[data-tool="${toolId}"]`);
+  if (!menuItem) return;
+  
+  // 找到父级li元素
+  const parentLi = menuItem.closest('#menu > li');
+  if (!parentLi) return;
+  
+  // 展开该菜单
+  expandMenu(parentLi);
+  
+  // 添加活动状态
+  document.querySelectorAll('#menu a').forEach(link => {
+    link.classList.remove('active');
+  });
+  menuItem.classList.add('active');
+}
+
 // 显示指定工具
 function showTool(toolId) {
   // 显示加载状态
@@ -238,6 +381,9 @@ function showTool(toolId) {
   if (homepage) {
     homepage.style.display = 'none';
   }
+  
+  // 展开对应的菜单
+  expandMenuByToolId(toolId);
   
   // 先加载工具，再显示
   window.loadTool(toolId)
@@ -573,11 +719,13 @@ function filterMenu(term) {
   let hasMatch = false;
   
   // 搜索菜单项
-  document.querySelectorAll('#menu .cat').forEach(cat => {
-    let categoryHasMatch = false;
-    const ul = cat.nextElementSibling;
+  document.querySelectorAll('#menu > li').forEach(li => {
+    const cat = li.querySelector('.cat');
+    const ul = li.querySelector('ul');
     
-    if (!ul) return; // 防止空引用错误
+    if (!cat || !ul) return; // 防止空引用错误
+    
+    let categoryHasMatch = false;
     
     ul.querySelectorAll('a').forEach(a => {
       const match = a.textContent.toLowerCase().includes(lowerTerm);
@@ -591,33 +739,13 @@ function filterMenu(term) {
     });
     
     // 显示/隐藏分类
-    if (cat.parentElement) {
-      cat.parentElement.style.display = categoryHasMatch ? 'block' : 'none';
-    }
+    li.style.display = categoryHasMatch ? 'block' : 'none';
     
-    // 展开匹配的分类
+    // 展开匹配的分类或折叠不匹配的分类
     if (categoryHasMatch && term) {
-      ul.classList.add('expanded');
-      ul.style.opacity = '1';
-      ul.style.visibility = 'visible';
-      
-      // 确保设置足够大的高度
-      setTimeout(() => {
-        if (ul.classList.contains('expanded')) {
-          ul.style.maxHeight = '10000px'; // 先设置一个足够大的值
-          setTimeout(() => {
-            const scrollHeight = ul.scrollHeight;
-            ul.style.maxHeight = (scrollHeight + 100) + 'px';
-            console.log('搜索展开菜单，高度:', scrollHeight);
-          }, 100);
-        }
-      }, 50);
+      expandMenu(li);
     } else if (!categoryHasMatch && term) {
-      // 如果该分类没有匹配项，确保它被折叠
-      ul.classList.remove('expanded');
-      ul.style.maxHeight = '0px';
-      ul.style.opacity = '0';
-      ul.style.visibility = 'hidden';
+      collapseMenu(li);
     }
   });
   
@@ -800,7 +928,51 @@ window.toggleSidebar = function() {
     aside.classList.add('collapsed');
     main.classList.add('expanded');
   }
+  
+  // 在移动设备上，点击菜单项后自动收起侧边栏
+  if (window.innerWidth <= 768) {
+    document.querySelectorAll('#menu a').forEach(link => {
+      link.addEventListener('click', () => {
+        aside.classList.add('collapsed');
+        main.classList.add('expanded');
+      });
+    });
+    
+    // 点击主内容区域时自动收起侧边栏
+    main.addEventListener('click', (e) => {
+      if (window.innerWidth <= 768 && !aside.classList.contains('collapsed')) {
+        aside.classList.add('collapsed');
+        main.classList.add('expanded');
+      }
+    });
+  }
 };
+
+// 响应窗口大小变化
+window.addEventListener('resize', () => {
+  // 在移动设备上默认收起侧边栏
+  if (window.innerWidth <= 768) {
+    const aside = document.querySelector('aside');
+    const main = document.querySelector('main');
+    aside.classList.add('collapsed');
+    main.classList.add('expanded');
+  }
+});
+
+// 在移动设备上点击菜单外区域自动收起菜单
+document.addEventListener('click', (e) => {
+  if (window.innerWidth <= 768) {
+    const aside = document.querySelector('aside');
+    const main = document.querySelector('main');
+    const menuBtn = document.querySelector('.mobile-menu-btn');
+    
+    // 如果点击的不是侧边栏内的元素，也不是菜单按钮，则收起侧边栏
+    if (!aside.contains(e.target) && !menuBtn.contains(e.target) && !aside.classList.contains('collapsed')) {
+      aside.classList.add('collapsed');
+      main.classList.add('expanded');
+    }
+  }
+});
 
 // 记录工具使用次数
 function incrementToolUsage(toolId) {
@@ -1141,6 +1313,9 @@ function setupSettingsPanel() {
   settingsBtn.innerHTML = `<button title="设置"><i class="fa fa-cog"></i></button>`;
   document.body.appendChild(settingsBtn);
   
+  // 获取当前设置
+  const showLastTool = localStorage.getItem('showLastToolOnStartup') === 'true';
+  
   // 创建设置面板
   const settingsPanel = document.createElement('div');
   settingsPanel.className = 'settings-panel';
@@ -1158,6 +1333,15 @@ function setupSettingsPanel() {
             <button class="theme-btn light-theme" data-theme="light">浅色</button>
             <button class="theme-btn dark-theme" data-theme="dark">深色</button>
           </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>行为</h4>
+        <div class="setting-item">
+          <label>
+            <input type="checkbox" id="show-last-tool" ${showLastTool ? 'checked' : ''}>
+            启动时自动打开上次使用的工具
+          </label>
         </div>
       </div>
       <div class="settings-section">
@@ -1347,6 +1531,32 @@ function setupShareTools() {
   }
 }
 
+// 调试菜单状态
+function debugMenuState() {
+  console.log('===== 菜单状态调试 =====');
+  document.querySelectorAll('#menu > li').forEach((li, index) => {
+    const cat = li.querySelector('.cat');
+    const ul = li.querySelector('ul');
+    const catText = cat ? cat.textContent.trim() : '未知';
+    const isExpanded = ul ? ul.classList.contains('expanded') : false;
+    const maxHeight = ul ? ul.style.maxHeight : 'N/A';
+    const opacity = ul ? ul.style.opacity : 'N/A';
+    const visibility = ul ? ul.style.visibility : 'N/A';
+    const childCount = ul ? ul.querySelectorAll('li').length : 0;
+    const arrow = cat ? cat.querySelector('.menu-arrow') : null;
+    const arrowRotated = arrow ? arrow.classList.contains('rotated') : false;
+    
+    console.log(`菜单 ${index+1}: ${catText}`);
+    console.log(`  - 展开状态: ${isExpanded ? '已展开' : '已折叠'}`);
+    console.log(`  - 最大高度: ${maxHeight}`);
+    console.log(`  - 不透明度: ${opacity}`);
+    console.log(`  - 可见性: ${visibility}`);
+    console.log(`  - 子菜单数量: ${childCount}`);
+    console.log(`  - 箭头旋转: ${arrowRotated ? '已旋转' : '未旋转'}`);
+  });
+  console.log('========================');
+}
+
 // 页面加载完成后初始化
 window.addEventListener('DOMContentLoaded', () => {
   // 加载第三方库
@@ -1354,6 +1564,24 @@ window.addEventListener('DOMContentLoaded', () => {
   
   // 加载菜单
   loadMenu();
+  
+  // 添加调试按钮（仅在开发环境使用）
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const debugBtn = document.createElement('button');
+    debugBtn.textContent = '调试菜单';
+    debugBtn.style.position = 'fixed';
+    debugBtn.style.bottom = '80px';
+    debugBtn.style.right = '20px';
+    debugBtn.style.zIndex = '1000';
+    debugBtn.style.padding = '8px 12px';
+    debugBtn.style.backgroundColor = '#f44336';
+    debugBtn.style.color = 'white';
+    debugBtn.style.border = 'none';
+    debugBtn.style.borderRadius = '4px';
+    debugBtn.style.cursor = 'pointer';
+    debugBtn.onclick = debugMenuState;
+    document.body.appendChild(debugBtn);
+  }
   
   // 搜索功能
   document.getElementById('search').addEventListener('input', e => {

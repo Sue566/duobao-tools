@@ -1,518 +1,328 @@
 /**
- * 贷款计算器 - UI交互模块
+ * 贷款计算器 - UI模块
  */
-
-// UI交互功能
-const LoanUI = {
-  /**
-   * 显示结果摘要
-   * @param {object} container - 摘要容器元素
-   * @param {number} amount - 贷款金额
-   * @param {number} additionalCosts - 附加费用
-   * @param {number} term - 贷款期限(月)
-   * @param {number} rate - 年利率(小数)
-   * @param {number} totalPayment - 总还款额
-   * @param {number} totalInterest - 总利息
-   * @param {boolean} isEqualInstallment - 是否等额本息
-   * @param {boolean} isEqualPrincipal - 是否等额本金
-   * @param {boolean} isInterestOnly - 是否先息后本
-   */
-  displaySummary: function(container, amount, additionalCosts, term, rate, totalPayment, totalInterest, isEqualInstallment, isEqualPrincipal, isInterestOnly) {
-    let repaymentMethod = '';
-    let paymentLabel = '';
-    
-    if (isEqualInstallment) {
-      repaymentMethod = '等额本息';
-      paymentLabel = '月供';
-    } else if (isEqualPrincipal) {
-      repaymentMethod = '等额本金';
-      paymentLabel = '首月还款额';
-    } else if (isInterestOnly) {
-      repaymentMethod = '先息后本';
-      paymentLabel = '月供(仅利息)';
-    }
-    
-    // 计算月供
-    let monthlyPayment;
-    if (isEqualInstallment) {
-      monthlyPayment = totalPayment / term;
-    } else if (isEqualPrincipal) {
-      monthlyPayment = (amount / term) + (amount * (rate / 12));
-    } else if (isInterestOnly) {
-      monthlyPayment = amount * (rate / 12);
-    }
-    
-    // 计算总成本
-    const totalCost = amount + additionalCosts + totalInterest;
-    
-    container.innerHTML = `
-      <div class="summary-item">
-        <div class="summary-label">贷款金额</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(amount)}</div>
-      </div>
-      ${additionalCosts > 0 ? `
-      <div class="summary-item">
-        <div class="summary-label">附加费用</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(additionalCosts)}</div>
-      </div>` : ''}
-      <div class="summary-item">
-        <div class="summary-label">贷款期限</div>
-        <div class="summary-value">${term} 个月 (${Math.floor(term / 12)} 年 ${term % 12} 个月)</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">年利率</div>
-        <div class="summary-value">${(rate * 100).toFixed(2)}%</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">还款方式</div>
-        <div class="summary-value">${repaymentMethod}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">${paymentLabel}</div>
-        <div class="summary-value highlight">${LoanUtils.formatCurrency(monthlyPayment)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">总还款额</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(totalPayment)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">总利息</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(totalInterest)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">利息占比</div>
-        <div class="summary-value">${(totalInterest / totalPayment * 100).toFixed(2)}%</div>
-      </div>
-      ${additionalCosts > 0 ? `
-      <div class="summary-item">
-        <div class="summary-label">总成本</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(totalCost)}</div>
-      </div>` : ''}
-    `;
-  },
-  
-  /**
-   * 显示组合贷款结果摘要
-   * @param {object} container - 摘要容器元素
-   * @param {number} commercialAmount - 商业贷款金额
-   * @param {number} commercialTerm - 商业贷款期限(月)
-   * @param {number} commercialRate - 商业贷款年利率(小数)
-   * @param {number} housingAmount - 公积金贷款金额
-   * @param {number} housingTerm - 公积金贷款期限(月)
-   * @param {number} housingRate - 公积金贷款年利率(小数)
-   * @param {number} totalPayment - 总还款额
-   * @param {number} totalInterest - 总利息
-   * @param {number} totalMonthlyPayment - 总月供
-   * @param {boolean} isEqualInstallment - 是否等额本息
-   */
-  displayCombinedSummary: function(container, commercialAmount, commercialTerm, commercialRate, housingAmount, housingTerm, housingRate, totalPayment, totalInterest, totalMonthlyPayment, isEqualInstallment) {
-    const totalAmount = commercialAmount + housingAmount;
-    const repaymentMethod = isEqualInstallment ? '等额本息' : '等额本金';
-    
-    container.innerHTML = `
-      <div class="summary-item">
-        <div class="summary-label">商业贷款金额</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(commercialAmount)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">商业贷款期限</div>
-        <div class="summary-value">${commercialTerm} 个月 (${Math.floor(commercialTerm / 12)} 年 ${commercialTerm % 12} 个月)</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">商业贷款年利率</div>
-        <div class="summary-value">${(commercialRate * 100).toFixed(2)}%</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">公积金贷款金额</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(housingAmount)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">公积金贷款期限</div>
-        <div class="summary-value">${housingTerm} 个月 (${Math.floor(housingTerm / 12)} 年 ${housingTerm % 12} 个月)</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">公积金贷款年利率</div>
-        <div class="summary-value">${(housingRate * 100).toFixed(2)}%</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">总贷款金额</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(totalAmount)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">还款方式</div>
-        <div class="summary-value">${repaymentMethod}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">总月供</div>
-        <div class="summary-value highlight">${LoanUtils.formatCurrency(totalMonthlyPayment)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">总还款额</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(totalPayment)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">总利息</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(totalInterest)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">利息占比</div>
-        <div class="summary-value">${(totalInterest / totalPayment * 100).toFixed(2)}%</div>
-      </div>
-    `;
-  },
-  
-  /**
-   * 显示提前还款结果摘要
-   * @param {object} container - 摘要容器元素
-   * @param {object} result - 提前还款计算结果
-   */
-  displayPrepaymentSummary: function(container, result) {
-    container.innerHTML = `
-      <div class="summary-item">
-        <div class="summary-label">原贷款金额</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(result.originalSchedule[0].remainingPrincipal)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">已还期数</div>
-        <div class="summary-value">${result.paidSchedule.length} 期</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">已还本金</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(result.paidPrincipal)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">已还利息</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(result.paidInterest)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">剩余本金</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(result.remainingPrincipal)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">提前还款金额</div>
-        <div class="summary-value highlight">${LoanUtils.formatCurrency(result.prepaymentAmount)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">提前还款后剩余本金</div>
-        <div class="summary-value">${LoanUtils.formatCurrency(result.newRemainingPrincipal)}</div>
-      </div>
-      <div class="summary-item">
-        <div class="summary-label">节省利息</div>
-        <div class="summary-value highlight positive">${LoanUtils.formatCurrency(result.interestSaved)}</div>
-      </div>
-      ${result.termReduced > 0 ? `
-      <div class="summary-item">
-        <div class="summary-label">缩短期限</div>
-        <div class="summary-value highlight positive">${result.termReduced} 期 (${Math.floor(result.termReduced / 12)} 年 ${result.termReduced % 12} 个月)</div>
-      </div>` : ''}
-    `;
-  },
-  
-  /**
-   * 显示提前还款对比结果
-   * @param {object} container - 对比容器元素
-   * @param {object} result - 提前还款计算结果
-   * @param {boolean} isReduceTerm - 是否缩短贷款期限
-   */
-  displayPrepaymentComparison: function(container, result, isReduceTerm) {
-    // 计算原计划总利息
-    const originalRemainingInterest = result.originalSchedule.slice(result.paidSchedule.length).reduce((sum, item) => sum + item.interest, 0);
-    const originalTotalInterest = result.paidInterest + originalRemainingInterest;
-    
-    // 计算提前还款后总利息
-    const newTotalInterest = result.paidInterest + result.newSchedule.reduce((sum, item) => sum + item.interest, 0);
-    
-    // 计算原计划总还款额
-    const originalTotalPayment = result.paidPrincipal + result.paidInterest + result.remainingPrincipal + originalRemainingInterest;
-    
-    // 计算提前还款后总还款额
-    const newTotalPayment = result.paidPrincipal + result.paidInterest + result.prepaymentAmount + 
-      result.newSchedule.reduce((sum, item) => sum + item.payment, 0);
-    
-    // 计算原计划剩余期数
-    const originalRemainingTerm = result.originalSchedule.length - result.paidSchedule.length;
-    
-    // 计算提前还款后剩余期数
-    const newRemainingTerm = result.newSchedule.length;
-    
-    // 计算原计划月供
-    const originalMonthlyPayment = result.originalSchedule[result.paidSchedule.length]?.payment || 0;
-    
-    // 计算提前还款后月供
-    const newMonthlyPayment = result.newSchedule[0]?.payment || 0;
-    
-    container.innerHTML = `
-      <div class="comparison-item">
-        <div class="comparison-label">总利息</div>
-        <div class="comparison-value">
-          <div>原计划: ${LoanUtils.formatCurrency(originalTotalInterest)}</div>
-          <div>提前还款后: ${LoanUtils.formatCurrency(newTotalInterest)}</div>
-          <div class="comparison-value positive">节省: ${LoanUtils.formatCurrency(result.interestSaved)}</div>
-        </div>
-      </div>
+(function() {
+  // 定义UI模块
+  const LoanUI = {
+    // 显示贷款摘要
+    displaySummary: function(container, amount, additionalCosts, term, rate, totalPayment, totalInterest, isEqualInstallment, isEqualPrincipal, isInterestOnly) {
+      // 清空容器
+      container.innerHTML = '';
       
-      <div class="comparison-item">
-        <div class="comparison-label">总还款额</div>
-        <div class="comparison-value">
-          <div>原计划: ${LoanUtils.formatCurrency(originalTotalPayment)}</div>
-          <div>提前还款后: ${LoanUtils.formatCurrency(newTotalPayment)}</div>
-          <div class="comparison-value positive">节省: ${LoanUtils.formatCurrency(originalTotalPayment - newTotalPayment)}</div>
-        </div>
-      </div>
+      // 创建摘要表格
+      const table = document.createElement('table');
+      table.className = 'table table-bordered';
       
-      <div class="comparison-item">
-        <div class="comparison-label">剩余期数</div>
-        <div class="comparison-value">
-          <div>原计划: ${originalRemainingTerm} 期</div>
-          <div>提前还款后: ${newRemainingTerm} 期</div>
-          ${isReduceTerm ? `<div class="comparison-value positive">缩短: ${result.termReduced} 期</div>` : ''}
-        </div>
-      </div>
-      
-      <div class="comparison-item">
-        <div class="comparison-label">月供</div>
-        <div class="comparison-value">
-          <div>原计划: ${LoanUtils.formatCurrency(originalMonthlyPayment)}</div>
-          <div>提前还款后: ${LoanUtils.formatCurrency(newMonthlyPayment)}</div>
-          ${!isReduceTerm ? `<div class="comparison-value positive">减少: ${LoanUtils.formatCurrency(originalMonthlyPayment - newMonthlyPayment)}</div>` : ''}
-        </div>
-      </div>
-    `;
-  },
-  
-  /**
-   * 显示还款计划表格
-   * @param {object} tableElement - 表格元素
-   * @param {Array} schedule - 还款计划数组
-   * @param {string} filterValue - 过滤器值
-   */
-  displaySchedule: function(tableElement, schedule, filterValue) {
-    const tbody = tableElement.querySelector('tbody');
-    tbody.innerHTML = '';
-    
-    // 根据过滤器筛选显示的还款计划
-    let filteredSchedule = [...schedule];
-    
-    if (filterValue === 'first-year') {
-      filteredSchedule = schedule.slice(0, 12);
-    } else if (filterValue === 'first-5-years') {
-      filteredSchedule = schedule.slice(0, 60);
-    } else if (filterValue === 'first-10') {
-      filteredSchedule = schedule.slice(0, 10);
-    } else if (filterValue === 'last-10') {
-      filteredSchedule = schedule.slice(-10);
-    }
-    
-    // 生成表格行
-    filteredSchedule.forEach(item => {
-      const row = document.createElement('tr');
-      
-      row.innerHTML = `
-        <td>${item.period}</td>
-        <td>${LoanUtils.formatDate(item.date)}</td>
-        <td>${LoanUtils.formatCurrency(item.payment)}</td>
-        <td>${LoanUtils.formatCurrency(item.principal)}</td>
-        <td>${LoanUtils.formatCurrency(item.interest)}</td>
-        <td>${LoanUtils.formatCurrency(item.remainingPrincipal)}</td>
-      `;
-      
-      tbody.appendChild(row);
-    });
-  },
-  
-  /**
-   * 显示组合贷款还款计划表格
-   * @param {object} tableElement - 表格元素
-   * @param {Array} schedule - 组合贷款还款计划数组
-   * @param {string} filterValue - 过滤器值
-   */
-  displayCombinedSchedule: function(tableElement, schedule, filterValue) {
-    const tbody = tableElement.querySelector('tbody');
-    tbody.innerHTML = '';
-    
-    // 根据过滤器筛选显示的还款计划
-    let filteredSchedule = [...schedule];
-    
-    if (filterValue === 'first-year') {
-      filteredSchedule = schedule.slice(0, 12);
-    } else if (filterValue === 'first-5-years') {
-      filteredSchedule = schedule.slice(0, 60);
-    } else if (filterValue === 'first-10') {
-      filteredSchedule = schedule.slice(0, 10);
-    } else if (filterValue === 'last-10') {
-      filteredSchedule = schedule.slice(-10);
-    }
-    
-    // 生成表格行
-    filteredSchedule.forEach(item => {
-      const row = document.createElement('tr');
-      
-      row.innerHTML = `
-        <td>${item.period}</td>
-        <td>${LoanUtils.formatDate(item.date)}</td>
-        <td>${LoanUtils.formatCurrency(item.cPayment || 0)}</td>
-        <td>${LoanUtils.formatCurrency(item.hPayment || 0)}</td>
-        <td>${LoanUtils.formatCurrency(item.payment)}</td>
-        <td>${LoanUtils.formatCurrency(item.principal)}</td>
-        <td>${LoanUtils.formatCurrency(item.interest)}</td>
-        <td>${LoanUtils.formatCurrency(item.remainingPrincipal)}</td>
-      `;
-      
-      tbody.appendChild(row);
-    });
-  },
-  
-  /**
-   * 显示贷款方案比较表格
-   * @param {object} tableElement - 表格元素
-   * @param {Array} results - 比较结果数组
-   */
-  displayCompareTable: function(tableElement, results) {
-    const tbody = tableElement.querySelector('tbody');
-    tbody.innerHTML = '';
-    
-    // 生成表格行
-    results.forEach(item => {
-      const row = document.createElement('tr');
-      
-      row.innerHTML = `
-        <td>${item.name}</td>
-        <td>${LoanUtils.formatCurrency(item.amount)}</td>
-        <td>${Math.floor(item.term / 12)} 年 ${item.term % 12} 个月</td>
-        <td>${item.repaymentMethod}</td>
-        <td>${LoanUtils.formatCurrency(item.monthlyPayment)}</td>
-        <td>${LoanUtils.formatCurrency(item.totalPayment)}</td>
-        <td>${LoanUtils.formatCurrency(item.totalInterest)}</td>
-        <td>${(item.interestRatio * 100).toFixed(2)}%</td>
-      `;
-      
-      tbody.appendChild(row);
-    });
-  },
-  
-  /**
-   * 显示利率参考弹窗
-   * @param {string} type - 贷款类型
-   * @param {object} rateReferenceData - 利率参考数据
-   * @param {function} callback - 选择利率后的回调函数
-   */
-  showRateReference: function(type, rateReferenceData, callback) {
-    const data = rateReferenceData[type];
-    
-    let html = `<div class="rate-reference-modal">
-      <div class="rate-reference-header">
-        <h3>${data.name}</h3>
-      </div>
-      <div class="rate-reference-content">
-        <table class="rate-table">
-          <thead>
-            <tr>
-              <th>贷款期限</th>
-              <th>基准年利率(%)</th>
-            </tr>
-          </thead>
-          <tbody>`;
-    
-    data.rates.forEach(item => {
-      html += `
+      // 添加表头
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
         <tr>
-          <td>${item.term}</td>
-          <td>${item.rate.toFixed(2)}</td>
-        </tr>`;
-    });
-    
-    html += `
-          </tbody>
-        </table>
-      </div>
-      <div class="rate-reference-footer">
-        <button id="apply-rate" class="btn btn-sm btn-success">应用选中利率</button>
-        <button id="close-rate-reference" class="btn btn-sm">关闭</button>
-      </div>
-    </div>`;
-    
-    // 创建模态框
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.innerHTML = html;
-    document.body.appendChild(modal);
-    
-    // 添加事件监听
-    modal.querySelector('#close-rate-reference').addEventListener('click', () => {
-      document.body.removeChild(modal);
-    });
-    
-    // 点击行选择利率
-    const rows = modal.querySelectorAll('.rate-table tbody tr');
-    rows.forEach(row => {
-      row.addEventListener('click', () => {
-        rows.forEach(r => r.classList.remove('selected'));
-        row.classList.add('selected');
-      });
-    });
-    
-    // 应用选中利率
-    modal.querySelector('#apply-rate').addEventListener('click', () => {
-      const selectedRow = modal.querySelector('.rate-table tbody tr.selected');
-      if (selectedRow) {
-        const rate = selectedRow.querySelector('td:nth-child(2)').textContent;
-        callback(rate);
+          <th>贷款金额</th>
+          <th>贷款期限</th>
+          <th>年利率</th>
+          <th>还款方式</th>
+          <th>总还款额</th>
+          <th>总利息</th>
+          <th>利息占比</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+      
+      // 添加表体
+      const tbody = document.createElement('tbody');
+      const tr = document.createElement('tr');
+      
+      // 计算利息占比
+      const interestRatio = totalInterest / totalPayment * 100;
+      
+      // 确定还款方式文本
+      let repaymentMethod = '';
+      if (isEqualInstallment) {
+        repaymentMethod = '等额本息';
+      } else if (isEqualPrincipal) {
+        repaymentMethod = '等额本金';
+      } else if (isInterestOnly) {
+        repaymentMethod = '只还利息';
       }
-      document.body.removeChild(modal);
-    });
-  },
+      
+      // 设置单元格内容
+      tr.innerHTML = `
+        <td>${LoanUtils.formatCurrency(amount)}${additionalCosts > 0 ? '<br><small>+' + LoanUtils.formatCurrency(additionalCosts) + '(税费)</small>' : ''}</td>
+        <td>${term}月${term > 12 ? '<br><small>(' + (term / 12).toFixed(1) + '年)</small>' : ''}</td>
+        <td>${(rate * 100).toFixed(2)}%</td>
+        <td>${repaymentMethod}</td>
+        <td>${LoanUtils.formatCurrency(totalPayment)}</td>
+        <td>${LoanUtils.formatCurrency(totalInterest)}</td>
+        <td>${interestRatio.toFixed(2)}%</td>
+      `;
+      
+      tbody.appendChild(tr);
+      table.appendChild(tbody);
+      
+      // 添加到容器
+      container.appendChild(table);
+    },
+    
+    // 显示还款计划
+    displaySchedule: function(container, schedule, filter) {
+      // 获取表格体
+      const tbody = container.querySelector('tbody');
+      
+      // 清空表格体
+      tbody.innerHTML = '';
+      
+      // 根据过滤器筛选数据
+      let filteredSchedule = schedule;
+      if (filter === 'first-year') {
+        filteredSchedule = schedule.filter(payment => payment.month <= 12);
+      } else if (filter === 'first-5-years') {
+        filteredSchedule = schedule.filter(payment => payment.month <= 60);
+      } else if (filter === 'last-year') {
+        filteredSchedule = schedule.filter(payment => payment.month > schedule.length - 12);
+      } else if (filter === 'key-points') {
+        // 关键点：第1期、第12期、第24期、第36期、第60期、第120期、第180期、第240期、第300期、最后一期
+        const keyMonths = [1, 12, 24, 36, 60, 120, 180, 240, 300, schedule.length];
+        filteredSchedule = schedule.filter(payment => keyMonths.includes(payment.month));
+      }
+      
+      // 添加行
+      filteredSchedule.forEach(payment => {
+        const tr = document.createElement('tr');
+        
+        tr.innerHTML = `
+          <td>${payment.month}</td>
+          <td>${LoanUtils.formatDate(payment.date)}</td>
+          <td>${LoanUtils.formatCurrency(payment.payment)}</td>
+          <td>${LoanUtils.formatCurrency(payment.principal)}</td>
+          <td>${LoanUtils.formatCurrency(payment.interest)}</td>
+          <td>${LoanUtils.formatCurrency(payment.balance)}</td>
+        `;
+        
+        // 如果有商业贷款和公积金贷款的分项
+        if (payment.commercialPayment !== undefined && payment.housingPayment !== undefined) {
+          tr.innerHTML += `
+            <td>${LoanUtils.formatCurrency(payment.commercialPayment)}</td>
+            <td>${LoanUtils.formatCurrency(payment.housingPayment)}</td>
+          `;
+        }
+        
+        tbody.appendChild(tr);
+      });
+    },
+    
+    // 显示提前还款比较
+    displayPrepaymentComparison: function(container, originalResult, newResult, prepaymentAmount, alreadyPaid) {
+      // 清空容器
+      container.innerHTML = '';
+      
+      // 创建比较表格
+      const table = document.createElement('table');
+      table.className = 'table table-bordered';
+      
+      // 添加表头
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th></th>
+          <th>原还款计划</th>
+          <th>提前还款后</th>
+          <th>节省</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+      
+      // 添加表体
+      const tbody = document.createElement('tbody');
+      
+      // 计算节省的利息
+      const savedInterest = originalResult.totalInterest - newResult.totalInterest - originalResult.schedule[alreadyPaid].interest;
+      
+      // 计算节省的期数
+      const savedMonths = originalResult.schedule.length - newResult.schedule.length - 1;
+      
+      // 添加总还款额行
+      const trPayment = document.createElement('tr');
+      trPayment.innerHTML = `
+        <td>总还款额</td>
+        <td>${LoanUtils.formatCurrency(originalResult.totalPayment)}</td>
+        <td>${LoanUtils.formatCurrency(newResult.totalPayment + prepaymentAmount + originalResult.paidAmount)}</td>
+        <td>${LoanUtils.formatCurrency(originalResult.totalPayment - newResult.totalPayment - prepaymentAmount - originalResult.paidAmount)}</td>
+      `;
+      tbody.appendChild(trPayment);
+      
+      // 添加总利息行
+      const trInterest = document.createElement('tr');
+      trInterest.innerHTML = `
+        <td>总利息</td>
+        <td>${LoanUtils.formatCurrency(originalResult.totalInterest)}</td>
+        <td>${LoanUtils.formatCurrency(newResult.totalInterest + originalResult.paidInterest)}</td>
+        <td>${LoanUtils.formatCurrency(savedInterest)}</td>
+      `;
+      tbody.appendChild(trInterest);
+      
+      // 添加还款期数行
+      const trTerm = document.createElement('tr');
+      trTerm.innerHTML = `
+        <td>还款期数</td>
+        <td>${originalResult.schedule.length}期</td>
+        <td>${newResult.schedule.length + alreadyPaid + 1}期</td>
+        <td>${savedMonths}期</td>
+      `;
+      tbody.appendChild(trTerm);
+      
+      // 添加月供行
+      const trMonthly = document.createElement('tr');
+      trMonthly.innerHTML = `
+        <td>月供</td>
+        <td>${LoanUtils.formatCurrency(originalResult.schedule[0].payment)}</td>
+        <td>${LoanUtils.formatCurrency(newResult.schedule[0].payment)}</td>
+        <td>${LoanUtils.formatCurrency(originalResult.schedule[0].payment - newResult.schedule[0].payment)}</td>
+      `;
+      tbody.appendChild(trMonthly);
+      
+      table.appendChild(tbody);
+      
+      // 添加到容器
+      container.appendChild(table);
+      
+      // 添加提前还款说明
+      const info = document.createElement('div');
+      info.className = 'alert alert-info';
+      info.innerHTML = `
+        <p>提前还款金额: ${LoanUtils.formatCurrency(prepaymentAmount)}</p>
+        <p>已还期数: ${alreadyPaid}期</p>
+        <p>提前还款后剩余期数: ${newResult.schedule.length}期</p>
+        <p>节省利息: ${LoanUtils.formatCurrency(savedInterest)}</p>
+      `;
+      
+      container.appendChild(info);
+    },
+    
+    // 显示贷款方案比较表格
+    displayComparisonTable: function(container, results) {
+      // 清空容器
+      container.innerHTML = '';
+      
+      // 创建表格
+      const table = document.createElement('table');
+      table.className = 'table table-bordered table-striped';
+      
+      // 添加表头
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>贷款类型</th>
+          <th>还款方式</th>
+          <th>贷款金额</th>
+          <th>贷款期限</th>
+          <th>年利率</th>
+          <th>首月月供</th>
+          <th>末月月供</th>
+          <th>总还款额</th>
+          <th>总利息</th>
+          <th>利息占比</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+      
+      // 添加表体
+      const tbody = document.createElement('tbody');
+      
+      results.forEach(result => {
+        const tr = document.createElement('tr');
+        
+        tr.innerHTML = `
+          <td>${result.type}</td>
+          <td>${result.method}</td>
+          <td>${LoanUtils.formatCurrency(result.amount)}</td>
+          <td>${result.term / 12}年</td>
+          <td>${typeof result.rate === 'string' ? result.rate : (result.rate * 100).toFixed(2) + '%'}</td>
+          <td>${LoanUtils.formatCurrency(result.firstPayment)}</td>
+          <td>${LoanUtils.formatCurrency(result.lastPayment)}</td>
+          <td>${LoanUtils.formatCurrency(result.totalPayment)}</td>
+          <td>${LoanUtils.formatCurrency(result.totalInterest)}</td>
+          <td>${(result.interestRatio * 100).toFixed(2)}%</td>
+        </tr>
+      `;
+        
+        tbody.appendChild(tr);
+      });
+      
+      table.appendChild(tbody);
+      
+      // 添加到容器
+      container.appendChild(table);
+    },
+    
+    // 显示利率参考
+    showRateReference: function(type, rateData, callback) {
+      // 创建模态框
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style.display = 'block';
+      
+      // 根据贷款类型选择数据
+      const data = type === 'commercial' ? rateData.commercial : rateData.housing;
+      
+      // 创建模态框内容
+      modal.innerHTML = `
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>${data.name}</h3>
+            <span class="close">&times;</span>
+          </div>
+          <div class="modal-body">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>贷款期限</th>
+                  <th>基准利率(%)</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.rates.map(item => `
+                  <tr>
+                    <td>${item.term}</td>
+                    <td>${item.rate.toFixed(2)}</td>
+                    <td><button class="btn btn-sm btn-primary select-rate" data-rate="${item.rate}">选择</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+            <p class="text-muted">注：以上利率仅供参考，实际利率以银行公布为准。</p>
+          </div>
+        </div>
+      `;
+      
+      // 添加到文档
+      document.body.appendChild(modal);
+      
+      // 关闭按钮事件
+      const closeBtn = modal.querySelector('.close');
+      closeBtn.addEventListener('click', () => {
+        document.body.removeChild(modal);
+      });
+      
+      // 点击模态框外部关闭
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          document.body.removeChild(modal);
+        }
+      });
+      
+      // 选择利率按钮事件
+      const selectBtns = modal.querySelectorAll('.select-rate');
+      selectBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const rate = parseFloat(btn.dataset.rate);
+          callback(rate);
+          document.body.removeChild(modal);
+        });
+      });
+    }
+  };
   
-  /**
-   * 导出还款计划为CSV
-   * @param {Array} schedule - 还款计划数组
-   * @param {string} filename - 文件名
-   */
-  exportScheduleToCSV: function(schedule, filename) {
-    // 创建CSV内容
-    let csv = '期数,还款日期,月供,本金,利息,剩余本金\n';
-    
-    schedule.forEach(item => {
-      csv += `${item.period},"${LoanUtils.formatDate(item.date)}",${item.payment},${item.principal},${item.interest},${item.remainingPrincipal}\n`;
-    });
-    
-    // 创建下载链接
-    LoanUtils.downloadTextFile(csv, filename, 'text/csv;charset=utf-8;');
-  },
-  
-  /**
-   * 导出组合贷款还款计划为CSV
-   * @param {Array} schedule - 组合贷款还款计划数组
-   * @param {string} filename - 文件名
-   */
-  exportCombinedScheduleToCSV: function(schedule, filename) {
-    // 创建CSV内容
-    let csv = '期数,还款日期,商贷月供,公积金月供,总月供,总本金,总利息,剩余本金\n';
-    
-    schedule.forEach(item => {
-      csv += `${item.period},"${LoanUtils.formatDate(item.date)}",${item.cPayment || 0},${item.hPayment || 0},${item.payment},${item.principal},${item.interest},${item.remainingPrincipal}\n`;
-    });
-    
-    // 创建下载链接
-    LoanUtils.downloadTextFile(csv, filename, 'text/csv;charset=utf-8;');
-  },
-  
-  /**
-   * 导出贷款方案比较结果为CSV
-   * @param {Array} results - 比较结果数组
-   * @param {string} filename - 文件名
-   */
-  exportCompareResultsToCSV: function(results, filename) {
-    // 创建CSV内容
-    let csv = '贷款方案,贷款金额,贷款期限,还款方式,月供,总还款额,总利息,利息占比\n';
-    
-    results.forEach(item => {
-      csv += `"${item.name}",${item.amount},"${Math.floor(item.term / 12)} 年 ${item.term % 12} 个月","${item.repaymentMethod}",${item.monthlyPayment},${item.totalPayment},${item.totalInterest},${(item.interestRatio * 100).toFixed(2)}%\n`;
-    });
-    
-    // 创建下载链接
-    LoanUtils.downloadTextFile(csv, filename, 'text/csv;charset=utf-8;');
-  }
-};
-
-// 导出模块
-window.LoanUI = LoanUI;
+  // 导出模块
+  window.LoanUI = LoanUI;
+})();
