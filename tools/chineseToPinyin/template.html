@@ -1,0 +1,166 @@
+<div class="chinese-to-pinyin-container">
+  <div class="tool-header">
+    <h2><i class="fa fa-language"></i> 中文转拼音</h2>
+    <p class="tool-description">将中文文本转换为拼音，支持多种拼音格式和转换选项。</p>
+  </div>
+  
+  <div class="tool-container">
+    <!-- 输入区域 -->
+    <div class="tool-input-section">
+      <div class="form-group">
+        <label for="chinese-input">中文文本</label>
+        <textarea id="chinese-input" class="form-control" rows="6" placeholder="请输入需要转换的中文文本..."></textarea>
+        <small class="form-text text-muted">支持直接粘贴或拖放文本文件</small>
+      </div>
+      
+      <div class="form-group">
+        <label>转换选项</label>
+        <div class="options-container">
+          <div class="form-check">
+            <input type="radio" name="pinyin-type" id="type-normal" value="normal" checked />
+            <label for="type-normal">普通拼音（nǐ hǎo）</label>
+          </div>
+          <div class="form-check">
+            <input type="radio" name="pinyin-type" id="type-tone" value="tone" />
+            <label for="type-tone">带声调数字（ni3 hao3）</label>
+          </div>
+          <div class="form-check">
+            <input type="radio" name="pinyin-type" id="type-toneNum" value="toneNum" />
+            <label for="type-toneNum">仅声调数字（n3 h3）</label>
+          </div>
+          <div class="form-check">
+            <input type="radio" name="pinyin-type" id="type-none" value="none" />
+            <label for="type-none">不带声调（ni hao）</label>
+          </div>
+          <div class="form-check">
+            <input type="radio" name="pinyin-type" id="type-first" value="first" />
+            <label for="type-first">首字母（n h）</label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>附加选项</label>
+        <div class="options-container">
+          <div class="form-check">
+            <input type="checkbox" id="option-segment" checked />
+            <label for="option-segment">分词转换（提高多音字准确率）</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="option-spacing" checked />
+            <label for="option-spacing">保留空格和标点</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="option-capitalize" />
+            <label for="option-capitalize">首字母大写</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="option-camelcase" />
+            <label for="option-camelcase">驼峰式命名（无空格）</label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 按钮区域 -->
+      <div class="tool-actions">
+        <button id="convert-btn" class="btn btn-primary"><i class="fa fa-exchange"></i> 转换</button>
+        <button id="clear-btn" class="btn btn-secondary"><i class="fa fa-trash-o"></i> 清空</button>
+        <button id="example-btn" class="btn btn-info"><i class="fa fa-lightbulb-o"></i> 示例</button>
+        <button id="paste-btn" class="btn"><i class="fa fa-paste"></i> 粘贴</button>
+      </div>
+    </div>
+    
+    <!-- 结果区域 -->
+    <div class="tool-result-section">
+      <div class="result-header">
+        <h3><i class="fa fa-check-circle"></i> 转换结果</h3>
+        <div class="result-actions">
+          <button id="copy-result" class="btn btn-sm btn-outline"><i class="fa fa-copy"></i> 复制</button>
+          <button id="download-result" class="btn btn-sm btn-outline"><i class="fa fa-download"></i> 下载</button>
+        </div>
+      </div>
+      
+      <div class="tool-result" id="pinyin-result">
+        <div class="no-result">
+          <i class="fa fa-info-circle"></i>
+          <p>点击"转换"按钮开始</p>
+        </div>
+      </div>
+      
+      <!-- 转换统计信息 -->
+      <div class="result-stats" id="result-stats" style="display: none;">
+        <div class="stat-item">
+          <span class="stat-label">转换字符数:</span>
+          <span class="stat-value" id="converted-chars">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">处理时间:</span>
+          <span class="stat-value" id="process-time">0 ms</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 历史记录区域 -->
+  <div class="history-section">
+    <div class="history-header">
+      <h3><i class="fa fa-history"></i> 转换历史</h3>
+      <button id="clear-history" class="btn btn-sm btn-outline"><i class="fa fa-trash-o"></i> 清空历史</button>
+    </div>
+    <div id="history-list" class="history-list">
+      <!-- 历史记录将在这里动态生成 -->
+      <div class="no-history">暂无历史记录</div>
+    </div>
+  </div>
+  
+  <!-- 工具说明区域 -->
+  <div class="tool-info">
+    <div class="info-header">
+      <h3><i class="fa fa-question-circle"></i> 使用指南</h3>
+      <button class="toggle-info-btn" title="展开/收起说明"><i class="fa fa-chevron-up"></i></button>
+    </div>
+    <div class="info-content">
+      <div class="info-item">
+        <h4><i class="fa fa-info-circle"></i> 功能介绍</h4>
+        <p>中文转拼音工具可以将中文文本转换为对应的拼音形式，支持多种拼音格式和转换选项，适用于学习汉语、输入法辅助、文本处理等场景。</p>
+      </div>
+      
+      <div class="info-item">
+        <h4><i class="fa fa-list-ol"></i> 转换选项说明</h4>
+        <ul>
+          <li><strong>普通拼音</strong> - 带声调符号的拼音，如"你好"转换为"nǐ hǎo"</li>
+          <li><strong>带声调数字</strong> - 声调以数字表示，如"你好"转换为"ni3 hao3"</li>
+          <li><strong>仅声调数字</strong> - 仅保留声母和声调数字，如"你好"转换为"n3 h3"</li>
+          <li><strong>不带声调</strong> - 不带声调的拼音，如"你好"转换为"ni hao"</li>
+          <li><strong>首字母</strong> - 仅保留拼音首字母，如"你好"转换为"n h"</li>
+        </ul>
+        <p>附加选项：</p>
+        <ul>
+          <li><strong>分词转换</strong> - 启用分词功能，提高多音字转换准确率</li>
+          <li><strong>保留空格和标点</strong> - 在转换结果中保留原文的空格和标点符号</li>
+          <li><strong>首字母大写</strong> - 将转换结果中每个拼音的首字母大写</li>
+          <li><strong>驼峰式命名</strong> - 移除空格并将每个词的首字母大写（适合变量命名）</li>
+        </ul>
+      </div>
+      
+      <div class="info-item">
+        <h4><i class="fa fa-lightbulb-o"></i> 使用技巧</h4>
+        <ul>
+          <li>对于编程变量命名，可以选择"不带声调"+"驼峰式命名"选项</li>
+          <li>对于文件名拼音化，可以选择"不带声调"+"首字母大写"选项</li>
+          <li>对于拼音学习，建议使用"普通拼音"选项查看标准拼音</li>
+          <li>对于拼音输入法，可以使用"带声调数字"选项</li>
+        </ul>
+      </div>
+      
+      <div class="info-item">
+        <h4><i class="fa fa-exclamation-triangle"></i> 注意事项</h4>
+        <ul>
+          <li>对于多音字，工具会尝试根据上下文选择最合适的读音，但可能存在不准确的情况</li>
+          <li>特殊字符和非中文字符将保持原样</li>
+          <li>转换大量文本可能需要较长时间，请耐心等待</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

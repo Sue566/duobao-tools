@@ -1,0 +1,88 @@
+<div class="case-converter-container">
+  <div class="tool-header">
+    <h2>大小写转换工具</h2>
+    <div class="tool-description">
+      转换文本大小写、格式化文本和应用常见文本转换
+    </div>
+  </div>
+  
+  <div class="case-converter-main">
+    <div class="input-section">
+      <div class="input-header">
+        <div class="input-title">输入文本</div>
+        <div class="input-actions">
+          <button id="clear-input" class="btn btn-sm btn-outline">清空</button>
+          <button id="paste-input" class="btn btn-sm btn-outline">粘贴</button>
+        </div>
+      </div>
+      <textarea id="case-input" placeholder="在此输入或粘贴文本..."></textarea>
+      <div class="input-stats">
+        <span id="char-count">0</span> 个字符 | 
+        <span id="word-count">0</span> 个单词 | 
+        <span id="line-count">0</span> 行
+      </div>
+    </div>
+    
+    <div class="conversion-options">
+      <div class="conversion-group">
+        <div class="group-title">基本转换</div>
+        <div class="button-group">
+          <button id="to-upper" class="btn">转大写</button>
+          <button id="to-lower" class="btn">转小写</button>
+          <button id="to-title" class="btn">首字母大写</button>
+          <button id="to-sentence" class="btn">句首大写</button>
+          <button id="to-toggle" class="btn">大小写互换</button>
+        </div>
+      </div>
+      
+      <div class="conversion-group">
+        <div class="group-title">编程风格</div>
+        <div class="button-group">
+          <button id="to-camel" class="btn">驼峰命名(camelCase)</button>
+          <button id="to-pascal" class="btn">帕斯卡(PascalCase)</button>
+          <button id="to-snake" class="btn">蛇形命名(snake_case)</button>
+          <button id="to-kebab" class="btn">短横线(kebab-case)</button>
+          <button id="to-constant" class="btn">常量(CONSTANT_CASE)</button>
+        </div>
+      </div>
+      
+      <div class="conversion-group">
+        <div class="group-title">特殊处理</div>
+        <div class="button-group">
+          <button id="remove-spaces" class="btn">移除空格</button>
+          <button id="trim-lines" class="btn">修剪行首尾空格</button>
+          <button id="remove-empty-lines" class="btn">移除空行</button>
+          <button id="add-line-numbers" class="btn">添加行号</button>
+          <button id="sort-lines" class="btn">行排序</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="output-section">
+      <div class="output-header">
+        <div class="output-title">转换结果</div>
+        <div class="output-actions">
+          <button id="copy-output" class="btn btn-sm btn-primary">复制结果</button>
+          <button id="save-output" class="btn btn-sm btn-outline">保存到文件</button>
+        </div>
+      </div>
+      <textarea id="case-output" placeholder="转换结果将显示在这里..." readonly></textarea>
+      <div class="output-stats">
+        <span id="output-char-count">0</span> 个字符 | 
+        <span id="output-word-count">0</span> 个单词 | 
+        <span id="output-line-count">0</span> 行
+      </div>
+    </div>
+  </div>
+  
+  <div class="history-section">
+    <div class="history-header">
+      <div class="history-title">转换历史</div>
+      <button id="clear-history" class="btn btn-sm btn-outline">清空历史</button>
+    </div>
+    <div id="history-list" class="history-list">
+      <!-- 历史记录将在这里动态生成 -->
+      <div class="no-history">暂无历史记录</div>
+    </div>
+  </div>
+</div>

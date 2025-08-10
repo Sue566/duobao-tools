@@ -1,285 +1,405 @@
 /**
- * 多宝工具箱 - 颜色转换工具 - 转换器模块
+ * 多宝工具箱 - 颜色转换工具 - 转换模块
  */
-const utils = require('./utils');
-
-const converter = {
-  // 初始化转换器
-  initConverter: function(container) {
-    // 获取元素
-    const colorPreview = container.querySelector('#color-preview');
-    const colorPreviewText = container.querySelector('#color-preview-text');
-    
-    const hexInput = container.querySelector('#hex-input');
-    const rgbRInput = container.querySelector('#rgb-r');
-    const rgbGInput = container.querySelector('#rgb-g');
-    const rgbBInput = container.querySelector('#rgb-b');
-    const hslHInput = container.querySelector('#hsl-h');
-    const hslSInput = container.querySelector('#hsl-s');
-    const hslLInput = container.querySelector('#hsl-l');
-    const namedColorSelect = container.querySelector('#named-color');
-    
-    const convertHexBtn = container.querySelector('#convert-hex');
-    const convertRgbBtn = container.querySelector('#convert-rgb');
-    const convertHslBtn = container.querySelector('#convert-hsl');
-    const convertNamedBtn = container.querySelector('#convert-named');
-    
-    const outputHex = container.querySelector('#output-hex');
-    const outputRgb = container.querySelector('#output-rgb');
-    const outputRgba = container.querySelector('#output-rgba');
-    const outputHsl = container.querySelector('#output-hsl');
-    const outputHsla = container.querySelector('#output-hsla');
-    const outputNamed = container.querySelector('#output-named');
-    const outputCmyk = container.querySelector('#output-cmyk');
-    const outputHwb = container.querySelector('#output-hwb');
-    
-    const copyAllBtn = container.querySelector('#copy-all');
-    
-    // 更新颜色预览
-    const updateColorPreview = (color) => {
-      colorPreview.style.backgroundColor = color;
-      colorPreviewText.textContent = color;
-    };
-    
-    // 更新输出结果
-    const updateOutputs = (r, g, b) => {
-      // HEX
-      const hex = utils.rgbToHex(r, g, b);
-      outputHex.textContent = hex;
-      
-      // RGB
-      outputRgb.textContent = `rgb(${r}, ${g}, ${b})`;
-      
-      // RGBA
-      outputRgba.textContent = `rgba(${r}, ${g}, ${b}, 1)`;
-      
-      // HSL
-      const hsl = utils.rgbToHsl(r, g, b);
-      outputHsl.textContent = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
-      
-      // HSLA
-      outputHsla.textContent = `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, 1)`;
-      
-      // CMYK
-      const cmyk = utils.rgbToCmyk(r, g, b);
-      outputCmyk.textContent = `cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)`;
-      
-      // HWB
-      const hwb = utils.rgbToHwb(r, g, b);
-      outputHwb.textContent = `hwb(${hwb.h}, ${hwb.w}%, ${hwb.b}%)`;
-      
-      // 命名颜色
-      const namedColor = this.findClosestNamedColor(hex, namedColorSelect);
-      if (namedColor && namedColor.hex.toLowerCase() === hex.toLowerCase()) {
-        outputNamed.textContent = namedColor.name;
-      } else {
-        outputNamed.textContent = '-';
-      }
+(function() {
+  const converter = {
+    // 初始化颜色转换器
+    initConverter: function(container) {
+      const colorInput = container.querySelector('#color-input');
+      const colorPicker = container.querySelector('#color-picker');
+      const colorPreview = container.querySelector('#color-preview');
+      const convertBtn = container.querySelector('#convert-btn');
+      const clearBtn = container.querySelector('#clear-btn');
+      const copyAllBtn = container.querySelector('#copy-all-btn');
+      const resultContainer = container.querySelector('#conversion-results');
+      const historyContainer = container.querySelector('#color-history');
+      const clearHistoryBtn = container.querySelector('#clear-history-btn');
       
       // 更新颜色预览
-      updateColorPreview(hex);
-    };
-    
-    // 从HEX输入转换
-    const convertFromHex = () => {
-      let hex = hexInput.value.trim();
-      
-      // 验证HEX格式
-      if (!hex.match(/^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/)) {
-        utils.showToast('无效的HEX颜色格式', 'error');
-        return;
-      }
-      
-      // 确保有#前缀
-      if (!hex.startsWith('#')) {
-        hex = '#' + hex;
-        hexInput.value = hex;
-      }
-      
-      // 转换为RGB
-      const rgb = utils.hexToRgb(hex);
-      
-      // 更新RGB输入
-      rgbRInput.value = rgb.r;
-      rgbGInput.value = rgb.g;
-      rgbBInput.value = rgb.b;
-      
-      // 转换为HSL
-      const hsl = utils.rgbToHsl(rgb.r, rgb.g, rgb.b);
-      
-      // 更新HSL输入
-      hslHInput.value = hsl.h;
-      hslSInput.value = hsl.s;
-      hslLInput.value = hsl.l;
-      
-      // 更新输出
-      updateOutputs(rgb.r, rgb.g, rgb.b);
-    };
-    
-    // 从RGB输入转换
-    const convertFromRgb = () => {
-      const r = parseInt(rgbRInput.value) || 0;
-      const g = parseInt(rgbGInput.value) || 0;
-      const b = parseInt(rgbBInput.value) || 0;
-      
-      // 验证RGB范围
-      if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
-        utils.showToast('RGB值必须在0-255之间', 'error');
-        return;
-      }
-      
-      // 转换为HEX
-      const hex = utils.rgbToHex(r, g, b);
-      
-      // 更新HEX输入
-      hexInput.value = hex;
-      
-      // 转换为HSL
-      const hsl = utils.rgbToHsl(r, g, b);
-      
-      // 更新HSL输入
-      hslHInput.value = hsl.h;
-      hslSInput.value = hsl.s;
-      hslLInput.value = hsl.l;
-      
-      // 更新输出
-      updateOutputs(r, g, b);
-    };
-    
-    // 从HSL输入转换
-    const convertFromHsl = () => {
-      const h = parseInt(hslHInput.value) || 0;
-      const s = parseInt(hslSInput.value) || 0;
-      const l = parseInt(hslLInput.value) || 0;
-      
-      // 验证HSL范围
-      if (h < 0 || h > 360 || s < 0 || s > 100 || l < 0 || l > 100) {
-        utils.showToast('HSL值超出范围', 'error');
-        return;
-      }
-      
-      // 转换为RGB
-      const rgb = utils.hslToRgb(h, s, l);
-      
-      // 更新RGB输入
-      rgbRInput.value = rgb.r;
-      rgbGInput.value = rgb.g;
-      rgbBInput.value = rgb.b;
-      
-      // 转换为HEX
-      const hex = utils.rgbToHex(rgb.r, rgb.g, rgb.b);
-      
-      // 更新HEX输入
-      hexInput.value = hex;
-      
-      // 更新输出
-      updateOutputs(rgb.r, rgb.g, rgb.b);
-    };
-    
-    // 从命名颜色转换
-    const convertFromNamed = () => {
-      const colorName = namedColorSelect.value;
-      const colorText = namedColorSelect.options[namedColorSelect.selectedIndex].text;
-      const hex = colorText.split(' - ')[1];
-      
-      // 更新HEX输入
-      hexInput.value = hex;
-      
-      // 转换为RGB
-      const rgb = utils.hexToRgb(hex);
-      
-      // 更新RGB输入
-      rgbRInput.value = rgb.r;
-      rgbGInput.value = rgb.g;
-      rgbBInput.value = rgb.b;
-      
-      // 转换为HSL
-      const hsl = utils.rgbToHsl(rgb.r, rgb.g, rgb.b);
-      
-      // 更新HSL输入
-      hslHInput.value = hsl.h;
-      hslSInput.value = hsl.s;
-      hslLInput.value = hsl.l;
-      
-      // 更新输出
-      updateOutputs(rgb.r, rgb.g, rgb.b);
-    };
-    
-    // 复制所有格式
-    const copyAllFormats = () => {
-      const formats = [
-        `HEX: ${outputHex.textContent}`,
-        `RGB: ${outputRgb.textContent}`,
-        `RGBA: ${outputRgba.textContent}`,
-        `HSL: ${outputHsl.textContent}`,
-        `HSLA: ${outputHsla.textContent}`,
-        `CMYK: ${outputCmyk.textContent}`,
-        `HWB: ${outputHwb.textContent}`
-      ];
-      
-      if (outputNamed.textContent !== '-') {
-        formats.push(`命名颜色: ${outputNamed.textContent}`);
-      }
-      
-      const text = formats.join('\n');
-      utils.copyToClipboard(text);
-    };
-    
-    // 事件监听
-    convertHexBtn.addEventListener('click', convertFromHex);
-    convertRgbBtn.addEventListener('click', convertFromRgb);
-    convertHslBtn.addEventListener('click', convertFromHsl);
-    convertNamedBtn.addEventListener('click', convertFromNamed);
-    
-    copyAllBtn.addEventListener('click', copyAllFormats);
-    
-    // 复制按钮
-    container.querySelectorAll('.copy-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const targetId = btn.getAttribute('data-target');
-        const targetElement = container.querySelector(`#${targetId}`);
-        if (targetElement && targetElement.textContent !== '-') {
-          utils.copyToClipboard(targetElement.textContent);
+      const updateColorPreview = () => {
+        const color = colorInput.value;
+        if (window.colorConverter.utils.isValidColor(color)) {
+          colorPreview.style.backgroundColor = color;
+          colorPicker.value = this.normalizeColor(color);
         }
+      };
+      
+      // 转换颜色
+      const convertColor = () => {
+        const color = colorInput.value;
+        
+        if (!window.colorConverter.utils.isValidColor(color)) {
+          window.colorConverter.utils.showToast('无效的颜色格式', 'error');
+          return;
+        }
+        
+        // 保存到历史记录
+        window.colorConverter.utils.saveColorToHistory(color);
+        
+        // 更新历史记录显示
+        this.updateColorHistory(historyContainer);
+        
+        // 转换颜色
+        const result = this.convertToAllFormats(color);
+        
+        // 显示结果
+        this.displayConversionResults(resultContainer, result);
+      };
+      
+      // 清空输入
+      const clearInput = () => {
+        colorInput.value = '';
+        colorPreview.style.backgroundColor = 'transparent';
+        resultContainer.innerHTML = '';
+      };
+      
+      // 复制所有结果
+      const copyAllResults = () => {
+        const color = colorInput.value;
+        
+        if (!window.colorConverter.utils.isValidColor(color)) {
+          window.colorConverter.utils.showToast('无效的颜色格式', 'error');
+          return;
+        }
+        
+        const result = this.convertToAllFormats(color);
+        let text = '';
+        
+        for (const format in result) {
+          text += `${format.toUpperCase()}: ${result[format]}\n`;
+        }
+        
+        if (window.colorConverter.utils.copyToClipboard(text)) {
+          window.colorConverter.utils.showToast('已复制所有颜色格式到剪贴板', 'success');
+        } else {
+          window.colorConverter.utils.showToast('复制失败', 'error');
+        }
+      };
+      
+      // 清空历史记录
+      const clearHistory = () => {
+        if (window.colorConverter.utils.clearColorHistory()) {
+          historyContainer.innerHTML = '<div class="empty-history">暂无历史记录</div>';
+          window.colorConverter.utils.showToast('历史记录已清空', 'success');
+        } else {
+          window.colorConverter.utils.showToast('清空历史记录失败', 'error');
+        }
+      };
+      
+      // 事件监听
+      colorInput.addEventListener('input', updateColorPreview);
+      colorPicker.addEventListener('input', () => {
+        colorInput.value = colorPicker.value;
+        updateColorPreview();
       });
-    });
-    
-    // 初始化
-    convertFromHex();
-  },
-  
-  // 查找最接近的命名颜色
-  findClosestNamedColor: function(hex, namedColorSelect) {
-    // 移除#号并转换为小写
-    hex = hex.replace(/^#/, '').toLowerCase();
-    
-    // 遍历所有选项
-    let closestColor = null;
-    let closestDistance = Infinity;
-    
-    Array.from(namedColorSelect.options).forEach(option => {
-      const colorHex = option.text.split(' - ')[1].replace(/^#/, '').toLowerCase();
       
-      // 计算颜色距离
-      const distance = utils.calculateColorDistance(hex, colorHex);
+      convertBtn.addEventListener('click', convertColor);
+      clearBtn.addEventListener('click', clearInput);
+      copyAllBtn.addEventListener('click', copyAllResults);
+      clearHistoryBtn.addEventListener('click', clearHistory);
       
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestColor = {
-          name: option.text.split(' - ')[0],
-          value: option.value,
-          hex: '#' + colorHex
+      // 初始化
+      updateColorPreview();
+      this.updateColorHistory(historyContainer);
+      
+      // 如果有初始颜色，则自动转换
+      if (colorInput.value) {
+        convertColor();
+      }
+    },
+    
+    // 更新颜色历史记录显示
+    updateColorHistory: function(container) {
+      const history = window.colorConverter.utils.getColorHistory();
+      
+      if (history.length === 0) {
+        container.innerHTML = '<div class="empty-history">暂无历史记录</div>';
+        return;
+      }
+      
+      let html = '';
+      
+      history.forEach(color => {
+        html += `
+          <div class="history-item" data-color="${color}">
+            <div class="history-color" style="background-color: ${color}"></div>
+            <div class="history-value">${color}</div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+      
+      // 添加点击事件
+      const historyItems = container.querySelectorAll('.history-item');
+      historyItems.forEach(item => {
+        item.addEventListener('click', () => {
+          const color = item.dataset.color;
+          const colorInput = document.querySelector('#color-input');
+          colorInput.value = color;
+          colorInput.dispatchEvent(new Event('input'));
+          
+          // 触发转换
+          document.querySelector('#convert-btn').click();
+        });
+      });
+    },
+    
+    // 将颜色转换为所有格式
+    convertToAllFormats: function(color) {
+      // 创建临时元素来获取计算后的颜色值
+      const tempElement = document.createElement('div');
+      tempElement.style.color = color;
+      document.body.appendChild(tempElement);
+      
+      // 获取计算后的颜色
+      const computedColor = getComputedStyle(tempElement).color;
+      document.body.removeChild(tempElement);
+      
+      // 解析RGB值
+      const match = computedColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      
+      if (!match) {
+        return {
+          error: '无法解析颜色'
         };
       }
-    });
+      
+      const r = parseInt(match[1]);
+      const g = parseInt(match[2]);
+      const b = parseInt(match[3]);
+      
+      // 转换为各种格式
+      const hex = window.colorConverter.utils.rgbToHex(r, g, b);
+      const hsl = window.colorConverter.utils.rgbToHsl(r, g, b);
+      const hsv = window.colorConverter.utils.rgbToHsv(r, g, b);
+      const cmyk = window.colorConverter.utils.rgbToCmyk(r, g, b);
+      const lab = window.colorConverter.utils.rgbToLab(r, g, b);
+      
+      return {
+        hex: hex,
+        rgb: `rgb(${r}, ${g}, ${b})`,
+        hsl: `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`,
+        hsv: `hsv(${hsv.h}, ${hsv.s}%, ${hsv.v}%)`,
+        cmyk: `cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)`,
+        lab: `lab(${lab.l}, ${lab.a}, ${lab.b})`,
+        
+        // 单独的值
+        r: r,
+        g: g,
+        b: b,
+        h: hsl.h,
+        s: hsl.s,
+        l: hsl.l,
+        h_hsv: hsv.h,
+        s_hsv: hsv.s,
+        v: hsv.v,
+        c: cmyk.c,
+        m: cmyk.m,
+        y: cmyk.y,
+        k: cmyk.k,
+        l_lab: lab.l,
+        a: lab.a,
+        b_lab: lab.b
+      };
+    },
     
-    // 如果距离太远，认为没有匹配的命名颜色
-    if (closestDistance > 10) {
-      return null;
+    // 显示转换结果
+    displayConversionResults: function(container, result) {
+      if (result.error) {
+        container.innerHTML = `<div class="error">${result.error}</div>`;
+        return;
+      }
+      
+      let html = `
+        <div class="result-group">
+          <div class="result-item">
+            <div class="result-label">HEX</div>
+            <div class="result-value">${result.hex}</div>
+            <button class="copy-btn" data-value="${result.hex}">复制</button>
+          </div>
+          
+          <div class="result-item">
+            <div class="result-label">RGB</div>
+            <div class="result-value">${result.rgb}</div>
+            <button class="copy-btn" data-value="${result.rgb}">复制</button>
+          </div>
+          
+          <div class="result-item">
+            <div class="result-label">HSL</div>
+            <div class="result-value">${result.hsl}</div>
+            <button class="copy-btn" data-value="${result.hsl}">复制</button>
+          </div>
+          
+          <div class="result-item">
+            <div class="result-label">HSV</div>
+            <div class="result-value">${result.hsv}</div>
+            <button class="copy-btn" data-value="${result.hsv}">复制</button>
+          </div>
+          
+          <div class="result-item">
+            <div class="result-label">CMYK</div>
+            <div class="result-value">${result.cmyk}</div>
+            <button class="copy-btn" data-value="${result.cmyk}">复制</button>
+          </div>
+          
+          <div class="result-item">
+            <div class="result-label">LAB</div>
+            <div class="result-value">${result.lab}</div>
+            <button class="copy-btn" data-value="${result.lab}">复制</button>
+          </div>
+        </div>
+        
+        <div class="result-group">
+          <div class="result-header">RGB 分量</div>
+          <div class="result-components">
+            <div class="component">
+              <div class="component-label">R</div>
+              <div class="component-value">${result.r}</div>
+            </div>
+            
+            <div class="component">
+              <div class="component-label">G</div>
+              <div class="component-value">${result.g}</div>
+            </div>
+            
+            <div class="component">
+              <div class="component-label">B</div>
+              <div class="component-value">${result.b}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="result-group">
+          <div class="result-header">HSL 分量</div>
+          <div class="result-components">
+            <div class="component">
+              <div class="component-label">H</div>
+              <div class="component-value">${result.h}°</div>
+            </div>
+            
+            <div class="component">
+              <div class="component-label">S</div>
+              <div class="component-value">${result.s}%</div>
+            </div>
+            
+            <div class="component">
+              <div class="component-label">L</div>
+              <div class="component-value">${result.l}%</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="result-group">
+          <div class="result-header">HSV 分量</div>
+          <div class="result-components">
+            <div class="component">
+              <div class="component-label">H</div>
+              <div class="component-value">${result.h_hsv}°</div>
+            </div>
+            
+            <div class="component">
+              <div class="component-label">S</div>
+              <div class="component-value">${result.s_hsv}%</div>
+            </div>
+            
+            <div class="component">
+              <div class="component-label">V</div>
+              <div class="component-value">${result.v}%</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="result-group">
+          <div class="result-header">CMYK 分量</div>
+          <div class="result-components">
+            <div class="component">
+              <div class="component-label">C</div>
+              <div class="component-value">${result.c}%</div>
+            </div>
+            
+            <div class="component">
+              <div class="component-label">M</div>
+              <div class="component-value">${result.m}%</div>
+            </div>
+            
+            <div class="component">
+              <div class="component-label">Y</div>
+              <div class="component-value">${result.y}%</div>
+            </div>
+            
+            <div class="component">
+              <div class="component-label">K</div>
+              <div class="component-value">${result.k}%</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="result-group">
+          <div class="result-header">LAB 分量</div>
+          <div class="result-components">
+            <div class="component">
+              <div class="component-label">L</div>
+              <div class="component-value">${result.l_lab}</div>
+            </div>
+            
+            <div class="component">
+              <div class="component-label">a</div>
+              <div class="component-value">${result.a}</div>
+            </div>
+            
+            <div class="component">
+              <div class="component-label">b</div>
+              <div class="component-value">${result.b_lab}</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      container.innerHTML = html;
+      
+      // 添加复制按钮事件
+      const copyBtns = container.querySelectorAll('.copy-btn');
+      copyBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const value = btn.dataset.value;
+          
+          if (window.colorConverter.utils.copyToClipboard(value)) {
+            window.colorConverter.utils.showToast('已复制到剪贴板', 'success');
+          } else {
+            window.colorConverter.utils.showToast('复制失败', 'error');
+          }
+        });
+      });
+    },
+    
+    // 标准化颜色格式为HEX
+    normalizeColor: function(color) {
+      // 创建临时元素来获取计算后的颜色值
+      const tempElement = document.createElement('div');
+      tempElement.style.color = color;
+      document.body.appendChild(tempElement);
+      
+      // 获取计算后的颜色
+      const computedColor = getComputedStyle(tempElement).color;
+      document.body.removeChild(tempElement);
+      
+      // 解析RGB值
+      const match = computedColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      
+      if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        
+        // 转换为HEX
+        return window.colorConverter.utils.rgbToHex(r, g, b);
+      }
+      
+      return '#000000';
     }
-    
-    return closestColor;
-  }
-};
-
-module.exports = converter;
+  };
+  
+  // 将转换器添加到全局命名空间
+  window.colorConverter.converter = converter;
+})();

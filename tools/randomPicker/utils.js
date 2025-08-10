@@ -1,9 +1,9 @@
 /**
  * 随机选择器 - 工具函数模块
  */
-
-// 工具函数模块
-const RandomPickerUtils = {
+(function() {
+  // 工具函数模块
+  window.randomPicker.utils = {
   // 显示提示消息
   showToast: function(message, type = 'info') {
     const toast = document.createElement('div');
@@ -339,5 +339,5 @@ const RandomPickerUtils = {
   }
 };
 
-// 导出模块
-window.RandomPickerUtils = RandomPickerUtils;
+  }
+})();

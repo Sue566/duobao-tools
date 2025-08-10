@@ -1,0 +1,371 @@
+<div class="tool-header">
+  <h2><i class="fa fa-clock-o"></i> 时间戳转换</h2>
+  <p class="tool-description">时间戳与日期互转，支持多种格式、时区转换、倒计时计算和历史记录。</p>
+</div>
+
+<div class="timestamp-tabs">
+  <div class="tab-header">
+    <button class="tab-btn active" data-tab="converter">转换器</button>
+    <button class="tab-btn" data-tab="timezone">时区转换</button>
+    <button class="tab-btn" data-tab="countdown">倒计时</button>
+    <button class="tab-btn" data-tab="history">历史记录</button>
+  </div>
+  
+  <div class="tab-content active" id="tab-converter">
+    <div class="timestamp-container">
+      <div class="timestamp-current">
+        <div class="current-time">
+          <div class="current-time-header">
+            <h3>当前时间</h3>
+            <button id="refresh-time" class="btn btn-sm"><i class="fa fa-refresh"></i> 刷新</button>
+          </div>
+          <div class="current-time-display">
+            <div class="time-item">
+              <div class="time-label">本地时间</div>
+              <div class="time-value" id="local-time">-</div>
+            </div>
+            <div class="time-item">
+              <div class="time-label">UTC时间</div>
+              <div class="time-value" id="utc-time">-</div>
+            </div>
+            <div class="time-item">
+              <div class="time-label">Unix时间戳</div>
+              <div class="time-value" id="unix-time">-</div>
+              <button id="copy-unix" class="btn btn-icon btn-sm" title="复制"><i class="fa fa-copy"></i></button>
+            </div>
+            <div class="time-item">
+              <div class="time-label">Unix毫秒时间戳</div>
+              <div class="time-value" id="unix-time-ms">-</div>
+              <button id="copy-unix-ms" class="btn btn-icon btn-sm" title="复制"><i class="fa fa-copy"></i></button>
+            </div>
+            <div class="time-item">
+              <div class="time-label">ISO 8601</div>
+              <div class="time-value" id="iso-time">-</div>
+              <button id="copy-iso" class="btn btn-icon btn-sm" title="复制"><i class="fa fa-copy"></i></button>
+            </div>
+            <div class="time-item">
+              <div class="time-label">RFC 2822</div>
+              <div class="time-value" id="rfc-time">-</div>
+              <button id="copy-rfc" class="btn btn-icon btn-sm" title="复制"><i class="fa fa-copy"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <div class="timestamp-converter">
+        <div class="converter-section">
+          <h3>时间戳转日期</h3>
+          <div class="form-group">
+            <label for="timestamp-input">输入时间戳</label>
+            <div class="input-with-buttons">
+              <input type="text" id="timestamp-input" class="form-control" placeholder="输入Unix时间戳..." />
+              <button id="convert-to-date" class="btn btn-success"><i class="fa fa-arrow-right"></i> 转换</button>
+              <button id="now-to-date" class="btn"><i class="fa fa-clock-o"></i> 当前</button>
+            </div>
+            <div class="form-check">
+              <input type="checkbox" id="timestamp-ms" />
+              <label for="timestamp-ms">毫秒时间戳</label>
+            </div>
+          </div>
+          
+          <div class="result-section" id="date-result">
+            <div class="result-item">
+              <div class="result-label">本地时间</div>
+              <div class="result-value" id="timestamp-local">-</div>
+              <button class="btn btn-icon btn-sm copy-btn" data-target="timestamp-local" title="复制"><i class="fa fa-copy"></i></button>
+            </div>
+            <div class="result-item">
+              <div class="result-label">UTC时间</div>
+              <div class="result-value" id="timestamp-utc">-</div>
+              <button class="btn btn-icon btn-sm copy-btn" data-target="timestamp-utc" title="复制"><i class="fa fa-copy"></i></button>
+            </div>
+            <div class="result-item">
+              <div class="result-label">ISO 8601</div>
+              <div class="result-value" id="timestamp-iso">-</div>
+              <button class="btn btn-icon btn-sm copy-btn" data-target="timestamp-iso" title="复制"><i class="fa fa-copy"></i></button>
+            </div>
+            <div class="result-item">
+              <div class="result-label">RFC 2822</div>
+              <div class="result-value" id="timestamp-rfc">-</div>
+              <button class="btn btn-icon btn-sm copy-btn" data-target="timestamp-rfc" title="复制"><i class="fa fa-copy"></i></button>
+            </div>
+            <div class="result-item">
+              <div class="result-label">相对时间</div>
+              <div class="result-value" id="timestamp-relative">-</div>
+            </div>
+            <div class="result-actions">
+              <button id="save-timestamp-result" class="btn btn-sm"><i class="fa fa-save"></i> 保存结果</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="converter-section">
+          <h3>日期转时间戳</h3>
+          <div class="form-group">
+            <label for="date-input">输入日期时间</label>
+            <div class="input-with-buttons">
+              <input type="datetime-local" id="date-input" class="form-control" />
+              <button id="convert-to-timestamp" class="btn btn-success"><i class="fa fa-arrow-right"></i> 转换</button>
+              <button id="now-to-timestamp" class="btn"><i class="fa fa-clock-o"></i> 当前</button>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="date-format-input">或输入格式化日期</label>
+            <div class="input-with-format">
+              <input type="text" id="date-format-input" class="form-control" placeholder="例如: 2023-01-01 12:00:00" />
+              <select id="date-format-select" class="form-control">
+                <option value="auto">自动识别</option>
+                <option value="YYYY-MM-DD HH:mm:ss">YYYY-MM-DD HH:mm:ss</option>
+                <option value="MM/DD/YYYY HH:mm:ss">MM/DD/YYYY HH:mm:ss</option>
+                <option value="DD/MM/YYYY HH:mm:ss">DD/MM/YYYY HH:mm:ss</option>
+                <option value="YYYY年MM月DD日 HH时mm分ss秒">YYYY年MM月DD日 HH时mm分ss秒</option>
+              </select>
+            </div>
+            <button id="convert-format-to-timestamp" class="btn btn-success"><i class="fa fa-arrow-right"></i> 转换</button>
+          </div>
+          
+          <div class="result-section" id="timestamp-result">
+            <div class="result-item">
+              <div class="result-label">Unix时间戳</div>
+              <div class="result-value" id="date-unix">-</div>
+              <button class="btn btn-icon btn-sm copy-btn" data-target="date-unix" title="复制"><i class="fa fa-copy"></i></button>
+            </div>
+            <div class="result-item">
+              <div class="result-label">Unix毫秒时间戳</div>
+              <div class="result-value" id="date-unix-ms">-</div>
+              <button class="btn btn-icon btn-sm copy-btn" data-target="date-unix-ms" title="复制"><i class="fa fa-copy"></i></button>
+            </div>
+            <div class="result-item">
+              <div class="result-label">ISO 8601</div>
+              <div class="result-value" id="date-iso">-</div>
+              <button class="btn btn-icon btn-sm copy-btn" data-target="date-iso" title="复制"><i class="fa fa-copy"></i></button>
+            </div>
+            <div class="result-actions">
+              <button id="save-date-result" class="btn btn-sm"><i class="fa fa-save"></i> 保存结果</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="tab-timezone">
+    <div class="timezone-container">
+      <div class="timezone-header">
+        <h3>时区转换</h3>
+        <p class="timezone-description">在不同时区之间转换时间</p>
+      </div>
+      
+      <div class="timezone-converter">
+        <div class="form-group">
+          <label for="timezone-date">选择日期时间</label>
+          <div class="input-with-buttons">
+            <input type="datetime-local" id="timezone-date" class="form-control" />
+            <button id="timezone-now" class="btn"><i class="fa fa-clock-o"></i> 当前</button>
+          </div>
+        </div>
+        
+        <div class="timezone-selectors">
+          <div class="form-group">
+            <label for="timezone-from">从时区</label>
+            <select id="timezone-from" class="form-control">
+              <option value="local">本地时区</option>
+              <option value="UTC">UTC</option>
+              <option value="Asia/Shanghai">亚洲/上海 (UTC+8)</option>
+              <option value="America/New_York">美国/纽约 (UTC-5/UTC-4)</option>
+              <option value="Europe/London">欧洲/伦敦 (UTC+0/UTC+1)</option>
+              <option value="Europe/Paris">欧洲/巴黎 (UTC+1/UTC+2)</option>
+              <option value="Asia/Tokyo">亚洲/东京 (UTC+9)</option>
+              <option value="Australia/Sydney">澳大利亚/悉尼 (UTC+10/UTC+11)</option>
+            </select>
+          </div>
+          
+          <div class="timezone-arrow">
+            <i class="fa fa-arrow-right"></i>
+          </div>
+          
+          <div class="form-group">
+            <label for="timezone-to">到时区</label>
+            <select id="timezone-to" class="form-control">
+              <option value="UTC">UTC</option>
+              <option value="local">本地时区</option>
+              <option value="Asia/Shanghai">亚洲/上海 (UTC+8)</option>
+              <option value="America/New_York">美国/纽约 (UTC-5/UTC-4)</option>
+              <option value="Europe/London">欧洲/伦敦 (UTC+0/UTC+1)</option>
+              <option value="Europe/Paris">欧洲/巴黎 (UTC+1/UTC+2)</option>
+              <option value="Asia/Tokyo">亚洲/东京 (UTC+9)</option>
+              <option value="Australia/Sydney">澳大利亚/悉尼 (UTC+10/UTC+11)</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="timezone-actions">
+          <button id="convert-timezone" class="btn btn-success"><i class="fa fa-exchange"></i> 转换</button>
+        </div>
+        
+        <div class="timezone-result">
+          <div class="result-section">
+            <div class="result-item">
+              <div class="result-label">转换结果</div>
+              <div class="result-value" id="timezone-result-value">-</div>
+              <button class="btn btn-icon btn-sm copy-btn" data-target="timezone-result-value" title="复制"><i class="fa fa-copy"></i></button>
+            </div>
+            <div class="result-item">
+              <div class="result-label">时区偏移</div>
+              <div class="result-value" id="timezone-offset">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="timezone-world-clock">
+        <div class="world-clock-header">
+          <h3>世界时钟</h3>
+          <button id="refresh-world-clock" class="btn btn-sm"><i class="fa fa-refresh"></i> 刷新</button>
+        </div>
+        
+        <div class="world-clock-list" id="world-clock-list">
+          <!-- 世界时钟将在JavaScript中动态生成 -->
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="tab-countdown">
+    <div class="countdown-container">
+      <div class="countdown-header">
+        <h3>倒计时计算</h3>
+        <p class="countdown-description">计算两个日期之间的时间差</p>
+      </div>
+      
+      <div class="countdown-calculator">
+        <div class="form-group">
+          <label for="countdown-from">开始日期</label>
+          <div class="input-with-buttons">
+            <input type="datetime-local" id="countdown-from" class="form-control" />
+            <button id="countdown-from-now" class="btn"><i class="fa fa-clock-o"></i> 当前</button>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="countdown-to">结束日期</label>
+          <div class="input-with-buttons">
+            <input type="datetime-local" id="countdown-to" class="form-control" />
+            <button id="countdown-to-now" class="btn"><i class="fa fa-clock-o"></i> 当前</button>
+          </div>
+        </div>
+        
+        <div class="countdown-actions">
+          <button id="calculate-countdown" class="btn btn-success"><i class="fa fa-calculator"></i> 计算</button>
+        </div>
+        
+        <div class="countdown-result">
+          <div class="result-section">
+            <div class="result-item">
+              <div class="result-label">总计</div>
+              <div class="result-value" id="countdown-total">-</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label">详细</div>
+              <div class="result-value" id="countdown-detailed">-</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label">工作日</div>
+              <div class="result-value" id="countdown-workdays">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="common-dates">
+        <div class="common-dates-header">
+          <h3>常用日期</h3>
+        </div>
+        
+        <div class="common-dates-list">
+          <button class="common-date-btn" data-days="7">一周后</button>
+          <button class="common-date-btn" data-days="30">一个月后</button>
+          <button class="common-date-btn" data-days="90">三个月后</button>
+          <button class="common-date-btn" data-days="180">半年后</button>
+          <button class="common-date-btn" data-days="365">一年后</button>
+          <button class="common-date-btn" data-days="-7">一周前</button>
+          <button class="common-date-btn" data-days="-30">一个月前</button>
+          <button class="common-date-btn" data-days="-365">一年前</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="tab-history">
+    <div class="history-container">
+      <div class="history-header">
+        <h3>历史记录</h3>
+        <div class="history-actions">
+          <button id="clear-history-btn" class="btn btn-secondary"><i class="fa fa-trash-o"></i> 清空历史</button>
+        </div>
+      </div>
+      
+      <div class="history-list" id="timestamp-history-list">
+        <div class="no-history">暂无历史记录</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="timestamp-batch">
+  <div class="batch-header">
+    <h3>批量转换</h3>
+    <div class="batch-actions">
+      <button id="batch-convert" class="btn btn-success"><i class="fa fa-exchange"></i> 批量转换</button>
+      <button id="batch-clear" class="btn btn-secondary"><i class="fa fa-trash-o"></i> 清空</button>
+    </div>
+  </div>
+  
+  <div class="batch-content">
+    <div class="form-group">
+      <label for="batch-input">输入时间戳或日期（每行一个）</label>
+      <textarea id="batch-input" class="form-control" placeholder="输入时间戳或日期，每行一个..."></textarea>
+    </div>
+    
+    <div class="form-group">
+      <label for="batch-output">转换结果</label>
+      <textarea id="batch-output" class="form-control" readonly></textarea>
+    </div>
+    
+    <div class="batch-options">
+      <div class="form-check">
+        <input type="radio" name="batch-mode" id="batch-timestamp-to-date" checked />
+        <label for="batch-timestamp-to-date">时间戳转日期</label>
+      </div>
+      <div class="form-check">
+        <input type="radio" name="batch-mode" id="batch-date-to-timestamp" />
+        <label for="batch-date-to-timestamp">日期转时间戳</label>
+      </div>
+      <div class="form-check">
+        <input type="checkbox" id="batch-include-ms" />
+        <label for="batch-include-ms">包含毫秒</label>
+      </div>
+      <div class="form-check">
+        <input type="checkbox" id="batch-include-relative" />
+        <label for="batch-include-relative">包含相对时间</label>
+      </div>
+    </div>
+    
+    <div class="batch-format-options">
+      <div class="form-group">
+        <label for="batch-output-format">输出格式</label>
+        <select id="batch-output-format" class="form-control">
+          <option value="default">默认格式</option>
+          <option value="iso">ISO 8601</option>
+          <option value="rfc">RFC 2822</option>
+          <option value="custom">自定义格式</option>
+        </select>
+      </div>
+      <div class="form-group" id="custom-format-group" style="display: none;">
+        <label for="batch-custom-format">自定义格式</label>
+        <input type="text" id="batch-custom-format" class="form-control" placeholder="例如: YYYY-MM-DD HH:mm:ss" value="YYYY-MM-DD HH:mm:ss" />
+      </div>
+    </div>
+  </div>
+</div>

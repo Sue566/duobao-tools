@@ -1,0 +1,229 @@
+.case-converter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 15px;
+  font-family: var(--font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
+}
+
+.tool-header {
+  margin-bottom: 15px;
+}
+
+.tool-header h2 {
+  margin: 0 0 8px 0;
+  color: var(--primary-color, #2c3e50);
+}
+
+.tool-description {
+  color: var(--text-secondary, #666);
+  font-size: 0.9rem;
+}
+
+.case-converter-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-section, .output-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-header, .output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.input-title, .output-title {
+  font-weight: 600;
+  color: var(--text-primary, #333);
+}
+
+.input-actions, .output-actions {
+  display: flex;
+  gap: 8px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 12px;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color, #3498db);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.input-stats, .output-stats {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #666);
+  text-align: right;
+}
+
+.conversion-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 10px 0;
+  padding: 15px;
+  background-color: var(--bg-light, #f8f9fa);
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #ddd);
+}
+
+.conversion-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.group-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary, #333);
+  margin-bottom: 5px;
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 4px;
+  background-color: var(--bg-white, #fff);
+  color: var(--text-primary, #333);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background-color: var(--bg-hover, #f1f1f1);
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+.btn-primary {
+  background-color: var(--primary-color, #3498db);
+  color: white;
+  border-color: var(--primary-color, #3498db);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark, #2980b9);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--border-color, #ddd);
+}
+
+.history-section {
+  margin-top: 20px;
+  border-top: 1px solid var(--border-color, #ddd);
+  padding-top: 15px;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.history-title {
+  font-weight: 600;
+  color: var(--text-primary, #333);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: var(--bg-light, #f8f9fa);
+  border-radius: 4px;
+  border: 1px solid var(--border-color, #ddd);
+}
+
+.history-item-content {
+  flex: 1;
+}
+
+.history-item-type {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.history-item-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #666);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
+.history-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.no-history {
+  color: var(--text-secondary, #666);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+/* 响应式调整 */
+@media (min-width: 768px) {
+  .case-converter-main {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .input-section, .output-section {
+    flex: 1;
+    min-width: 300px;
+  }
+  
+  .conversion-options {
+    width: 100%;
+    order: -1;
+  }
+}
+
+@media (min-width: 1200px) {
+  .conversion-options {
+    order: 0;
+    width: auto;
+    flex: 0 0 200px;
+  }
+}

@@ -1,0 +1,140 @@
+<div class="tool-header">
+  <h2><i class="fa fa-puzzle-piece"></i> 工具模板</h2>
+  <p class="tool-description">这是一个用于创建新工具的基础模板，提供了常用UI组件和功能示例。</p>
+</div>
+
+<div class="template-container">
+  <div class="template-guide card">
+    <div class="guide-header">
+      <h3>如何使用此模板</h3>
+    </div>
+    <div class="guide-content">
+      <ol>
+        <li>复制 <code>tools/tool-template</code> 目录到 <code>tools/你的工具ID</code></li>
+        <li>修改工具ID、标题和描述</li>
+        <li>实现你的工具功能</li>
+        <li>在 <code>menu.js</code> 中添加你的工具到菜单</li>
+      </ol>
+      <div class="guide-tips">
+        <h4>最佳实践</h4>
+        <ul>
+          <li>使用语义化的HTML结构</li>
+          <li>添加适当的错误处理</li>
+          <li>实现设置保存和加载功能</li>
+          <li>添加响应式设计支持移动设备</li>
+          <li>使用CSS变量确保主题兼容性</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="template-demo card">
+    <div class="demo-header">
+      <h3>组件示例</h3>
+    </div>
+    <div class="demo-content">
+      <div class="form-section">
+        <h4>表单组件</h4>
+        <div class="form-group">
+          <label for="template-input">文本输入</label>
+          <input type="text" id="template-input" class="form-control" placeholder="请输入内容">
+        </div>
+        
+        <div class="form-group">
+          <label for="template-select">下拉选择</label>
+          <select id="template-select" class="form-control">
+            <option value="option1">选项 1</option>
+            <option value="option2">选项 2</option>
+            <option value="option3">选项 3</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="template-textarea">多行文本</label>
+          <textarea id="template-textarea" class="form-control" rows="3" placeholder="请输入多行文本"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>复选框</label>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input type="checkbox" id="template-checkbox1" checked>
+              选项 1
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="template-checkbox2">
+              选项 2
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>单选按钮</label>
+          <div class="radio-group">
+            <label class="radio-item">
+              <input type="radio" name="template-radio" id="template-radio1" checked>
+              选项 A
+            </label>
+            <label class="radio-item">
+              <input type="radio" name="template-radio" id="template-radio2">
+              选项 B
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="button-section">
+        <h4>按钮组件</h4>
+        <div class="button-group">
+          <button id="template-primary-btn" class="btn btn-primary"><i class="fa fa-check"></i> 主要按钮</button>
+          <button id="template-secondary-btn" class="btn"><i class="fa fa-cog"></i> 次要按钮</button>
+          <button id="template-danger-btn" class="btn btn-danger"><i class="fa fa-trash-o"></i> 危险按钮</button>
+        </div>
+      </div>
+      
+      <div class="result-section">
+        <h4>结果展示</h4>
+        <div id="template-result" class="result-container">
+          <div class="placeholder-message">点击上方按钮查看结果</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="template-settings card">
+    <div class="settings-header">
+      <h3>设置示例</h3>
+    </div>
+    <div class="settings-content">
+      <div class="form-group">
+        <label for="template-theme">主题</label>
+        <select id="template-theme" class="form-control">
+          <option value="light">浅色</option>
+          <option value="dark">深色</option>
+          <option value="system">跟随系统</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="template-font-size">字体大小</label>
+        <select id="template-font-size" class="form-control">
+          <option value="small">小</option>
+          <option value="medium" selected>中</option>
+          <option value="large">大</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-item">
+          <input type="checkbox" id="template-auto-save" checked>
+          自动保存设置
+        </label>
+      </div>
+      
+      <div class="settings-actions">
+        <button id="template-save-settings" class="btn btn-primary"><i class="fa fa-save"></i> 保存设置</button>
+        <button id="template-reset-settings" class="btn"><i class="fa fa-refresh"></i> 重置设置</button>
+      </div>
+    </div>
+  </div>
+</div>

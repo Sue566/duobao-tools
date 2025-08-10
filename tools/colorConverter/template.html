@@ -1,0 +1,261 @@
+<!-- 颜色转换工具 - 模板 -->
+<div class="color-converter-container">
+  <div class="tab-container">
+    <div class="tab-buttons">
+      <button class="tab-btn active" data-tab="converter">颜色转换</button>
+      <button class="tab-btn" data-tab="palette">调色板</button>
+      <button class="tab-btn" data-tab="schemes">配色方案</button>
+      <button class="tab-btn" data-tab="accessibility">可访问性</button>
+    </div>
+    
+    <!-- 颜色转换标签页 -->
+    <div id="tab-converter" class="tab-content active">
+      <div class="input-section">
+        <div class="form-group">
+          <label for="color-input">输入颜色</label>
+          <div class="input-with-picker">
+            <input type="text" id="color-input" placeholder="输入颜色值 (HEX, RGB, HSL等)" value="#3498db">
+            <input type="color" id="color-picker" value="#3498db">
+          </div>
+        </div>
+        
+        <div class="color-preview-container">
+          <div id="color-preview" class="color-preview"></div>
+        </div>
+        
+        <div class="button-group">
+          <button id="convert-btn" class="primary-btn">转换</button>
+          <button id="clear-btn" class="secondary-btn">清空</button>
+          <button id="copy-all-btn" class="secondary-btn">复制所有</button>
+        </div>
+      </div>
+      
+      <div class="result-section">
+        <div class="section-header">
+          <h3>转换结果</h3>
+        </div>
+        
+        <div id="conversion-results" class="conversion-results">
+          <!-- 转换结果将在这里显示 -->
+        </div>
+      </div>
+      
+      <div class="history-section">
+        <div class="section-header">
+          <h3>历史记录</h3>
+          <button id="clear-history-btn" class="small-btn">清空历史</button>
+        </div>
+        
+        <div id="color-history" class="color-history">
+          <!-- 历史记录将在这里显示 -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- 调色板标签页 -->
+    <div id="tab-palette" class="tab-content">
+      <div class="input-section">
+        <div class="form-group">
+          <label for="base-color-input">基础颜色</label>
+          <div class="input-with-picker">
+            <input type="text" id="base-color-input" placeholder="输入基础颜色值" value="#3498db">
+            <input type="color" id="base-color-picker" value="#3498db">
+          </div>
+        </div>
+        
+        <div class="color-preview-container">
+          <div id="base-color-preview" class="color-preview"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="palette-type">调色板类型</label>
+          <select id="palette-type">
+            <option value="monochromatic">单色调色板</option>
+            <option value="analogous">类似色调色板</option>
+            <option value="complementary">互补色调色板</option>
+            <option value="triadic">三色调色板</option>
+            <option value="tetradic">四色调色板</option>
+            <option value="shades">阴影调色板</option>
+            <option value="tints">色调调色板</option>
+            <option value="random">随机调色板</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="palette-count">颜色数量</label>
+          <select id="palette-count">
+            <option value="3">3</option>
+            <option value="5" selected>5</option>
+            <option value="7">7</option>
+            <option value="9">9</option>
+          </select>
+        </div>
+        
+        <div class="button-group">
+          <button id="generate-palette" class="primary-btn">生成调色板</button>
+        </div>
+      </div>
+      
+      <div class="result-section">
+        <div class="section-header">
+          <h3>调色板结果</h3>
+          <div class="format-options">
+            <label>
+              <input type="radio" name="palette-format" value="hex" checked> HEX
+            </label>
+            <label>
+              <input type="radio" name="palette-format" value="rgb"> RGB
+            </label>
+            <label>
+              <input type="radio" name="palette-format" value="hsl"> HSL
+            </label>
+            <label>
+              <input type="radio" name="palette-format" value="css-vars"> CSS变量
+            </label>
+            <label>
+              <input type="radio" name="palette-format" value="sass-vars"> SASS变量
+            </label>
+            <label>
+              <input type="radio" name="palette-format" value="json"> JSON
+            </label>
+          </div>
+          <div class="button-group">
+            <button id="copy-palette" class="small-btn">复制</button>
+            <button id="download-palette" class="small-btn">下载</button>
+          </div>
+        </div>
+        
+        <div id="palette-result" class="palette-result">
+          <!-- 调色板结果将在这里显示 -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- 配色方案标签页 -->
+    <div id="tab-schemes" class="tab-content">
+      <div class="input-section">
+        <div class="form-group">
+          <label for="scheme-color-input">基础颜色</label>
+          <div class="input-with-picker">
+            <input type="text" id="scheme-color-input" placeholder="输入基础颜色值" value="#3498db">
+            <input type="color" id="scheme-color-picker" value="#3498db">
+          </div>
+        </div>
+        
+        <div class="color-preview-container">
+          <div id="scheme-color-preview" class="color-preview"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="scheme-type">配色方案类型</label>
+          <select id="scheme-type">
+            <option value="complementary">互补色</option>
+            <option value="analogous">类似色</option>
+            <option value="triadic">三色配色</option>
+            <option value="tetradic">四色配色</option>
+            <option value="split-complementary">分裂互补色</option>
+            <option value="monochromatic">单色配色</option>
+            <option value="square">正方形配色</option>
+            <option value="compound">复合配色</option>
+            <option value="shades">阴影配色</option>
+          </select>
+        </div>
+        
+        <div class="button-group">
+          <button id="generate-scheme" class="primary-btn">生成配色方案</button>
+        </div>
+      </div>
+      
+      <div class="result-section">
+        <div class="section-header">
+          <h3>配色方案结果</h3>
+          <div class="format-options">
+            <label>
+              <input type="radio" name="scheme-format" value="hex" checked> HEX
+            </label>
+            <label>
+              <input type="radio" name="scheme-format" value="rgb"> RGB
+            </label>
+            <label>
+              <input type="radio" name="scheme-format" value="hsl"> HSL
+            </label>
+            <label>
+              <input type="radio" name="scheme-format" value="css-vars"> CSS变量
+            </label>
+            <label>
+              <input type="radio" name="scheme-format" value="sass-vars"> SASS变量
+            </label>
+            <label>
+              <input type="radio" name="scheme-format" value="json"> JSON
+            </label>
+          </div>
+          <div class="button-group">
+            <button id="copy-scheme" class="small-btn">复制</button>
+            <button id="download-scheme" class="small-btn">下载</button>
+          </div>
+        </div>
+        
+        <div id="scheme-result" class="scheme-result">
+          <!-- 配色方案结果将在这里显示 -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- 可访问性标签页 -->
+    <div id="tab-accessibility" class="tab-content">
+      <div class="input-section">
+        <div class="form-group">
+          <label for="foreground-input">前景色 (文本)</label>
+          <div class="input-with-picker">
+            <input type="text" id="foreground-input" placeholder="输入前景色值" value="#333333">
+            <input type="color" id="foreground-picker" value="#333333">
+          </div>
+        </div>
+        
+        <div class="color-preview-container">
+          <div id="foreground-preview" class="color-preview"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="background-input">背景色</label>
+          <div class="input-with-picker">
+            <input type="text" id="background-input" placeholder="输入背景色值" value="#ffffff">
+            <input type="color" id="background-picker" value="#ffffff">
+          </div>
+        </div>
+        
+        <div class="color-preview-container">
+          <div id="background-preview" class="color-preview"></div>
+        </div>
+        
+        <div class="button-group">
+          <button id="check-contrast" class="primary-btn">检查对比度</button>
+          <button id="swap-colors" class="secondary-btn">交换颜色</button>
+        </div>
+      </div>
+      
+      <div class="result-section">
+        <div class="section-header">
+          <h3>文本预览</h3>
+        </div>
+        
+        <div class="text-preview">
+          <div id="text-preview-content" class="text-preview-content">
+            <p class="text-normal">这是普通大小的文本 (16px)</p>
+            <p class="text-small">这是小号文本 (12px)</p>
+            <h2 class="text-large">这是大号文本 (24px)</h2>
+            <p class="text-bold">这是粗体文本</p>
+          </div>
+        </div>
+        
+        <div class="section-header">
+          <h3>对比度结果</h3>
+        </div>
+        
+        <div id="contrast-result-content" class="contrast-result-content">
+          <!-- 对比度结果将在这里显示 -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

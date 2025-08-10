@@ -24,37 +24,68 @@
     render: function(container) {
       console.log(`渲染 ${TOOL_ID}`);
       
-      // 创建工具界面
-      container.innerHTML = `
-        <div class="tool-header">
-          <h2>工具模板</h2>
-          <p class="tool-description">这是一个用于创建新工具的基础模板。</p>
-        </div>
-        
-        <section>
-          <div class="alert alert-info">
-            <h4>如何使用此模板</h4>
-            <p>1. 复制 tools/tool-template 目录到 tools/你的工具ID</p>
-            <p>2. 修改工具ID、标题和描述</p>
-            <p>3. 实现你的工具功能</p>
-            <p>4. 在 menu.js 中添加你的工具到菜单</p>
-          </div>
+      // 加载HTML模板
+      this.loadTemplate(container)
+        .then(() => {
+          // 加载CSS样式
+          return this.loadStyles();
+        })
+        .then(() => {
+          // 添加收藏按钮
+          if (typeof window.addFavoriteButton === 'function') {
+            const header = container.querySelector('.tool-header');
+            window.addFavoriteButton(TOOL_ID, header);
+          }
           
-          <div class="form-group">
-            <label for="template-input">示例输入</label>
-            <input type="text" id="template-input" class="form-control" placeholder="请输入内容">
-          </div>
+          // 添加事件处理
+          this.setupEvents(container);
           
-          <div class="form-group">
-            <button id="template-button" class="btn">示例按钮</button>
-          </div>
-          
-          <div id="template-result" class="mt-3"></div>
-        </section>
-      `;
-      
-      // 添加事件处理
-      this.setupEvents(container);
+          // 加载设置
+          this.loadAndApplySettings(container);
+        })
+        .catch(error => {
+          console.error('加载模板失败:', error);
+          container.innerHTML = '<div class="tool-error">加载模板失败</div>';
+        });
+    },
+    
+    /**
+     * 加载HTML模板
+     * @param {HTMLElement} container - 工具容器元素
+     * @returns {Promise} 加载完成的Promise
+     */
+    loadTemplate: function(container) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'tools/tool-template/template.html', true);
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            container.innerHTML = xhr.responseText;
+            resolve();
+          } else {
+            reject(new Error(`加载模板失败: ${xhr.status}`));
+          }
+        };
+        xhr.onerror = function() {
+          reject(new Error('网络错误，无法加载模板'));
+        };
+        xhr.send();
+      });
+    },
+    
+    /**
+     * 加载CSS样式
+     * @returns {Promise} 加载完成的Promise
+     */
+    loadStyles: function() {
+      return new Promise((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'tools/tool-template/styles.css';
+        link.onload = resolve;
+        link.onerror = reject;
+        document.head.appendChild(link);
+      });
     },
     
     /**
@@ -64,35 +95,132 @@
     setupEvents: function(container) {
       // 获取元素
       const input = container.querySelector('#template-input');
-      const button = container.querySelector('#template-button');
+      const select = container.querySelector('#template-select');
+      const textarea = container.querySelector('#template-textarea');
+      const primaryBtn = container.querySelector('#template-primary-btn');
+      const secondaryBtn = container.querySelector('#template-secondary-btn');
+      const dangerBtn = container.querySelector('#template-danger-btn');
       const result = container.querySelector('#template-result');
       
-      // 添加按钮点击事件
-      button.addEventListener('click', () => {
+      // 设置相关元素
+      const themeSelect = container.querySelector('#template-theme');
+      const fontSizeSelect = container.querySelector('#template-font-size');
+      const autoSaveCheckbox = container.querySelector('#template-auto-save');
+      const saveSettingsBtn = container.querySelector('#template-save-settings');
+      const resetSettingsBtn = container.querySelector('#template-reset-settings');
+      
+      // 主要按钮点击事件
+      primaryBtn.addEventListener('click', () => {
         const inputValue = input.value.trim();
+        const selectValue = select.value;
+        const textareaValue = textarea.value.trim();
         
-        if (inputValue) {
+        if (inputValue || textareaValue) {
           result.innerHTML = `
-            <div style="padding: 15px; background-color: var(--success-color-light); border-left: 4px solid var(--success-color); margin-top: 15px;">
-              <h4>处理结果</h4>
-              <p>输入内容: ${inputValue}</p>
-              <p>处理时间: ${new Date().toLocaleString()}</p>
+            <div class="result-success">
+              <h4>处理成功</h4>
+              ${inputValue ? `<p><strong>输入内容:</strong> ${inputValue}</p>` : ''}
+              ${textareaValue ? `<p><strong>多行文本:</strong> ${textareaValue}</p>` : ''}
+              <p><strong>选择项:</strong> ${selectValue}</p>
+              <p><strong>处理时间:</strong> ${new Date().toLocaleString()}</p>
             </div>
           `;
         } else {
           result.innerHTML = `
-            <div style="padding: 15px; background-color: var(--warning-color-light); border-left: 4px solid var(--warning-color); margin-top: 15px;">
+            <div class="result-warning">
               <h4>提示</h4>
-              <p>请先输入内容</p>
+              <p>请先输入一些内容</p>
             </div>
           `;
         }
       });
       
+      // 次要按钮点击事件
+      secondaryBtn.addEventListener('click', () => {
+        const settings = this.loadSettings();
+        
+        result.innerHTML = `
+          <div class="result-success">
+            <h4>当前设置</h4>
+            <p><strong>主题:</strong> ${settings.theme}</p>
+            <p><strong>字体大小:</strong> ${settings.fontSize}</p>
+            <p><strong>自动保存:</strong> ${settings.autoSave ? '是' : '否'}</p>
+          </div>
+        `;
+      });
+      
+      // 危险按钮点击事件
+      dangerBtn.addEventListener('click', () => {
+        if (confirm('确定要执行此操作吗？这是一个模拟的危险操作。')) {
+          result.innerHTML = `
+            <div class="result-error">
+              <h4>操作执行</h4>
+              <p>这是一个模拟的危险操作结果。在实际应用中，这可能是删除数据或重置设置等操作。</p>
+              <p><strong>执行时间:</strong> ${new Date().toLocaleString()}</p>
+            </div>
+          `;
+        }
+      });
+      
+      // 保存设置按钮点击事件
+      saveSettingsBtn.addEventListener('click', () => {
+        const settings = {
+          theme: themeSelect.value,
+          fontSize: fontSizeSelect.value,
+          autoSave: autoSaveCheckbox.checked
+        };
+        
+        this.saveSettings(settings);
+        this.applySettings(settings, container);
+        
+        result.innerHTML = `
+          <div class="result-success">
+            <h4>设置已保存</h4>
+            <p>您的设置已成功保存。</p>
+          </div>
+        `;
+      });
+      
+      // 重置设置按钮点击事件
+      resetSettingsBtn.addEventListener('click', () => {
+        const defaultSettings = this.getDefaultSettings();
+        
+        themeSelect.value = defaultSettings.theme;
+        fontSizeSelect.value = defaultSettings.fontSize;
+        autoSaveCheckbox.checked = defaultSettings.autoSave;
+        
+        this.saveSettings(defaultSettings);
+        this.applySettings(defaultSettings, container);
+        
+        result.innerHTML = `
+          <div class="result-success">
+            <h4>设置已重置</h4>
+            <p>您的设置已恢复为默认值。</p>
+          </div>
+        `;
+      });
+      
+      // 设置变更事件（如果启用了自动保存）
+      const handleSettingChange = () => {
+        if (autoSaveCheckbox.checked) {
+          const settings = {
+            theme: themeSelect.value,
+            fontSize: fontSizeSelect.value,
+            autoSave: autoSaveCheckbox.checked
+          };
+          
+          this.saveSettings(settings);
+          this.applySettings(settings, container);
+        }
+      };
+      
+      themeSelect.addEventListener('change', handleSettingChange);
+      fontSizeSelect.addEventListener('change', handleSettingChange);
+      
       // 添加输入框回车事件
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-          button.click();
+          primaryBtn.click();
         }
       });
       
@@ -103,12 +231,50 @@
     },
     
     /**
+     * 加载并应用设置
+     * @param {HTMLElement} container - 工具容器元素
+     */
+    loadAndApplySettings: function(container) {
+      const settings = this.loadSettings();
+      
+      // 更新设置控件
+      const themeSelect = container.querySelector('#template-theme');
+      const fontSizeSelect = container.querySelector('#template-font-size');
+      const autoSaveCheckbox = container.querySelector('#template-auto-save');
+      
+      if (themeSelect) themeSelect.value = settings.theme;
+      if (fontSizeSelect) fontSizeSelect.value = settings.fontSize;
+      if (autoSaveCheckbox) autoSaveCheckbox.checked = settings.autoSave;
+      
+      // 应用设置
+      this.applySettings(settings, container);
+    },
+    
+    /**
+     * 应用设置到界面
+     * @param {Object} settings - 设置对象
+     * @param {HTMLElement} container - 工具容器元素
+     */
+    applySettings: function(settings, container) {
+      // 应用字体大小
+      container.style.fontSize = {
+        'small': '14px',
+        'medium': '16px',
+        'large': '18px'
+      }[settings.fontSize] || '16px';
+      
+      // 主题应用可能需要与全局主题系统协调
+      console.log(`应用设置: 主题=${settings.theme}, 字体大小=${settings.fontSize}, 自动保存=${settings.autoSave}`);
+    },
+    
+    /**
      * 保存工具设置
      * @param {Object} settings - 要保存的设置
      */
     saveSettings: function(settings) {
       try {
         localStorage.setItem(`settings_${TOOL_ID}`, JSON.stringify(settings));
+        console.log(`${TOOL_ID} 设置已保存:`, settings);
       } catch (e) {
         console.error(`保存 ${TOOL_ID} 设置失败:`, e);
       }
@@ -142,11 +308,21 @@
   };
   
   // 注册工具
-  window.tools[TOOL_ID] = tool;
+  if (typeof window.registerTool === 'function') {
+    window.registerTool(TOOL_ID, tool);
+  } else {
+    window.tools[TOOL_ID] = tool;
+    console.log(`工具 ${TOOL_ID} 已注册`);
+  }
   
   // 如果使用duobaoTools注册方式，也进行注册
   if (window.duobaoTools) {
-    window.duobaoTools[TOOL_ID] = tool;
+    window.duobaoTools[TOOL_ID] = {
+      name: '工具模板',
+      icon: 'fa-puzzle-piece',
+      description: '这是一个用于创建新工具的基础模板，提供了常用UI组件和功能示例。',
+      render: tool.render.bind(tool)
+    };
   }
   
   console.log(`${TOOL_ID} 已注册`);

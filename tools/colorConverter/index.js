@@ -1,30 +1,33 @@
 /**
- * 多宝工具箱 - 颜色转换工具 - 入口文件
+ * 多宝工具箱 - 颜色转换工具
  */
-
-// 导入模块
-const utils = require('./utils');
-const converter = require('./converter');
-const palette = require('./palette');
-const schemes = require('./schemes');
-const accessibility = require('./accessibility');
-const ui = require('./ui');
-
-// 定义工具
 (function() {
-  const tool = {
-    render: function(container) {
-      // 渲染UI
-      ui.renderUI(container);
-      
-      // 初始化各个模块
-      converter.initConverter(container);
-      palette.initPalette(container);
-      schemes.initSchemes(container);
-      accessibility.initAccessibility(container);
-    }
+  // 全局命名空间
+  window.colorConverter = {
+    utils: {},
+    converter: {},
+    palette: {},
+    schemes: {},
+    accessibility: {},
+    ui: {}
   };
   
-  // 注册工具
-  window.tools.colorConverter = tool;
+  // 初始化函数
+  function init() {
+    // 获取工具容器
+    const container = document.querySelector('.color-converter-container');
+    if (!container) return;
+    
+    // 初始化UI
+    window.colorConverter.ui.initUI(container);
+    
+    console.log('颜色转换工具初始化完成');
+  }
+  
+  // 页面加载完成后初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();

@@ -1,0 +1,230 @@
+<div class="tool-header">
+  <h2><i class="fa fa-file-code-o"></i> Base64 编解码</h2>
+  <p class="tool-description">支持 URL-safe（-/_）、可选去除填充（=），文件编解码，批量处理，历史记录，UTF-8 正确处理。</p>
+</div>
+
+<!-- 标签页导航 -->
+<div class="b64-tabs">
+  <button class="tab-btn active" data-tab="text">文本编解码</button>
+  <button class="tab-btn" data-tab="file">文件编解码</button>
+  <button class="tab-btn" data-tab="batch">批量处理</button>
+  <button class="tab-btn" data-tab="history">历史记录</button>
+</div>
+
+<!-- 文本编解码标签页 -->
+<div class="tab-content active" id="tab-text">
+  <div class="b64-options card">
+    <div class="row">
+      <label class="opt-item">
+        <input type="checkbox" id="b64-urlsafe" />
+        URL-safe
+      </label>
+      <label class="opt-item">
+        <input type="checkbox" id="b64-keep-pad" checked />
+        保留填充 =
+      </label>
+      <label class="opt-item">
+        <input type="checkbox" id="b64-auto-update" checked />
+        自动更新
+      </label>
+      <label class="opt-item">
+        <input type="checkbox" id="b64-wrap-lines" checked />
+        自动换行
+      </label>
+    </div>
+  </div>
+
+  <div class="b64-panels">
+    <div class="b64-panel card" data-type="text">
+      <div class="panel-header">
+        <div class="panel-title">文本</div>
+        <div class="panel-actions">
+          <button class="btn btn-sm btn-copy" title="复制"><i class="fa fa-copy"></i></button>
+          <button class="btn btn-sm btn-clear" title="清空"><i class="fa fa-eraser"></i></button>
+        </div>
+      </div>
+      <textarea class="panel-input" spellcheck="false" placeholder="输入要编码的文本..."></textarea>
+      <div class="char-count">0 个字符</div>
+    </div>
+    
+    <div class="b64-panel card" data-type="b64">
+      <div class="panel-header">
+        <div class="panel-title">Base64</div>
+        <div class="panel-actions">
+          <button class="btn btn-sm btn-copy" title="复制"><i class="fa fa-copy"></i></button>
+          <button class="btn btn-sm btn-clear" title="清空"><i class="fa fa-eraser"></i></button>
+        </div>
+      </div>
+      <textarea class="panel-input" spellcheck="false" placeholder="输入要解码的Base64..."></textarea>
+      <div class="char-count">0 个字符</div>
+    </div>
+  </div>
+
+  <div class="b64-actions">
+    <button id="b64-encode" class="btn btn-primary"><i class="fa fa-angle-double-right"></i> 编码 →</button>
+    <button id="b64-decode" class="btn"><i class="fa fa-angle-double-left"></i> 解码 ←</button>
+    <button id="b64-swap" class="btn"><i class="fa fa-exchange"></i> 互换</button>
+    <button id="b64-clear" class="btn"><i class="fa fa-trash-o"></i> 清空</button>
+    <button id="b64-save" class="btn"><i class="fa fa-save"></i> 保存到历史</button>
+  </div>
+</div>
+
+<!-- 文件编解码标签页 -->
+<div class="tab-content" id="tab-file">
+  <div class="card file-encode-section">
+    <h3>文件转 Base64</h3>
+    <div class="file-upload-area">
+      <input type="file" id="file-input" class="file-input" />
+      <label for="file-input" class="file-label">
+        <i class="fa fa-upload"></i>
+        <span>选择文件或拖放到此处</span>
+      </label>
+    </div>
+    <div id="file-info" class="file-info"></div>
+    <div class="file-options">
+      <label class="opt-item">
+        <input type="checkbox" id="file-urlsafe" />
+        URL-safe
+      </label>
+      <label class="opt-item">
+        <input type="checkbox" id="file-keep-pad" checked />
+        保留填充 =
+      </label>
+      <label class="opt-item">
+        <input type="checkbox" id="include-data-uri" />
+        包含 Data URI 前缀
+      </label>
+    </div>
+    <div class="file-actions">
+      <button id="encode-file" class="btn btn-primary"><i class="fa fa-file-code-o"></i> 编码文件</button>
+      <button id="copy-file-result" class="btn" disabled><i class="fa fa-copy"></i> 复制结果</button>
+      <button id="download-file-result" class="btn" disabled><i class="fa fa-download"></i> 下载结果</button>
+    </div>
+    <div class="file-result-container">
+      <textarea id="file-result" class="file-result" readonly placeholder="文件编码结果将显示在这里..."></textarea>
+    </div>
+  </div>
+  
+  <div class="card file-decode-section">
+    <h3>Base64 转文件</h3>
+    <div class="decode-input-container">
+      <textarea id="decode-input" class="decode-input" placeholder="粘贴 Base64 编码内容..."></textarea>
+    </div>
+    <div class="file-options">
+      <label class="opt-item">
+        <input type="checkbox" id="auto-detect-prefix" checked />
+        自动检测并移除 Data URI 前缀
+      </label>
+      <div class="filename-input">
+        <label for="output-filename">输出文件名:</label>
+        <input type="text" id="output-filename" placeholder="decoded_file" />
+      </div>
+    </div>
+    <div class="file-actions">
+      <button id="decode-to-file" class="btn btn-primary"><i class="fa fa-file"></i> 解码为文件</button>
+      <button id="preview-file" class="btn" disabled><i class="fa fa-eye"></i> 预览文件</button>
+    </div>
+    <div id="preview-container" class="preview-container"></div>
+  </div>
+</div>
+
+<!-- 批量处理标签页 -->
+<div class="tab-content" id="tab-batch">
+  <div class="card batch-section">
+    <h3>批量编解码</h3>
+    <p class="batch-description">每行作为一个独立的输入项进行处理，结果将保持相同的行顺序。</p>
+    
+    <div class="batch-options">
+      <div class="batch-mode">
+        <label><input type="radio" name="batch-mode" value="encode" checked /> 批量编码</label>
+        <label><input type="radio" name="batch-mode" value="decode" /> 批量解码</label>
+      </div>
+      <div class="batch-settings">
+        <label class="opt-item">
+          <input type="checkbox" id="batch-urlsafe" />
+          URL-safe
+        </label>
+        <label class="opt-item">
+          <input type="checkbox" id="batch-keep-pad" checked />
+          保留填充 =
+        </label>
+      </div>
+    </div>
+    
+    <div class="batch-panels">
+      <div class="batch-input-container">
+        <div class="panel-header">
+          <div class="panel-title">输入</div>
+          <div class="panel-actions">
+            <button id="batch-clear-input" class="btn btn-sm"><i class="fa fa-eraser"></i> 清空</button>
+          </div>
+        </div>
+        <textarea id="batch-input" class="batch-textarea" placeholder="输入要批量处理的内容，每行一个项目..."></textarea>
+      </div>
+      
+      <div class="batch-output-container">
+        <div class="panel-header">
+          <div class="panel-title">输出</div>
+          <div class="panel-actions">
+            <button id="batch-copy" class="btn btn-sm"><i class="fa fa-copy"></i> 复制</button>
+            <button id="batch-download" class="btn btn-sm"><i class="fa fa-download"></i> 下载</button>
+          </div>
+        </div>
+        <textarea id="batch-output" class="batch-textarea" readonly placeholder="处理结果将显示在这里..."></textarea>
+      </div>
+    </div>
+    
+    <div class="batch-actions">
+      <button id="batch-process" class="btn btn-primary"><i class="fa fa-cogs"></i> 处理</button>
+      <button id="batch-clear-all" class="btn"><i class="fa fa-trash-o"></i> 清空全部</button>
+    </div>
+  </div>
+</div>
+
+<!-- 历史记录标签页 -->
+<div class="tab-content" id="tab-history">
+  <div class="card history-section">
+    <div class="history-header">
+      <h3>历史记录</h3>
+      <button id="clear-history" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i> 清空历史</button>
+    </div>
+    <div id="history-list" class="history-list">
+      <div class="no-history">暂无历史记录</div>
+    </div>
+  </div>
+</div>
+
+<div class="b64-info card">
+  <div class="info-header">
+    <h3>Base64 编解码说明</h3>
+    <button class="toggle-info-btn"><i class="fa fa-chevron-up"></i></button>
+  </div>
+  <div class="info-content">
+    <div class="info-section">
+      <h4>什么是Base64？</h4>
+      <p>Base64是一种基于64个可打印字符来表示二进制数据的编码方式。这64个字符包括大小写英文字母、数字和符号（+/）。</p>
+    </div>
+    
+    <div class="info-section">
+      <h4>常见用途</h4>
+      <ul>
+        <li>在HTML中嵌入小型图片（Data URI）</li>
+        <li>在电子邮件中传输二进制附件</li>
+        <li>在URL参数中传递复杂数据</li>
+        <li>在JSON中包含二进制数据</li>
+        <li>在Web API中传输非ASCII字符</li>
+      </ul>
+    </div>
+    
+    <div class="info-section">
+      <h4>选项说明</h4>
+      <ul>
+        <li><strong>URL-safe</strong>：将标准Base64中的"+"替换为"-"，"/"替换为"_"，使其可以安全地用于URL</li>
+        <li><strong>保留填充</strong>：保留Base64编码末尾的"="填充字符（某些系统要求保留）</li>
+        <li><strong>自动更新</strong>：输入时自动进行编码或解码，无需点击按钮</li>
+        <li><strong>自动换行</strong>：长文本自动换行显示，提高可读性</li>
+        <li><strong>Data URI</strong>：在Base64前添加"data:类型;base64,"前缀，可直接在HTML中使用</li>
+      </ul>
+    </div>
+  </div>
+</div>
