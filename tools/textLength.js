@@ -161,6 +161,7 @@
           display: inline-flex;
           align-items: center;
           gap: 6px;
+          color: var(--text-color); /* 添加文字颜色，确保在浅色背景下可见 */
         }
         
         .btn:hover {

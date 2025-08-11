@@ -47,7 +47,8 @@
           this.setupEvents(container);
           
           // 初始化文本统计
-          this.updateTextStats(container);
+          const self = this;
+          self.updateTextStats(container);
         })
         .catch(error => {
           console.error('加载文本替换工具失败:', error);
@@ -89,11 +90,14 @@
     
     // 设置事件处理
     setupEvents: function(container) {
+      // 保存this引用
+      const self = this;
+      
       // 源文本输入事件
       const sourceText = container.querySelector('#source-text');
       if (sourceText) {
         sourceText.addEventListener('input', () => {
-          this.updateTextStats(container);
+          self.updateTextStats(container);
         });
       }
       
@@ -101,7 +105,7 @@
       const resultText = container.querySelector('#result-text');
       if (resultText) {
         resultText.addEventListener('input', () => {
-          this.updateTextStats(container);
+          self.updateTextStats(container);
         });
       }
       
@@ -109,7 +113,7 @@
       const replaceBtn = container.querySelector('#replace-btn');
       if (replaceBtn) {
         replaceBtn.addEventListener('click', () => {
-          this.performReplace(container);
+          self.performReplace(container);
         });
       }
       
@@ -117,7 +121,7 @@
       const addRuleBtn = container.querySelector('#add-rule-btn');
       if (addRuleBtn) {
         addRuleBtn.addEventListener('click', () => {
-          this.addRule(container);
+          self.addRule(container);
         });
       }
       
@@ -127,7 +131,7 @@
         clearBtn.addEventListener('click', () => {
           if (sourceText) sourceText.value = '';
           if (resultText) resultText.value = '';
-          this.updateTextStats(container);
+          self.updateTextStats(container);
         });
       }
       
@@ -157,7 +161,7 @@
             const temp = sourceText.value;
             sourceText.value = resultText.value;
             resultText.value = temp;
-            this.updateTextStats(container);
+            self.updateTextStats(container);
           }
         });
       }
@@ -166,7 +170,7 @@
       const saveRulesBtn = container.querySelector('#save-rules-btn');
       if (saveRulesBtn) {
         saveRulesBtn.addEventListener('click', () => {
-          this.saveRules(container);
+          self.saveRules(container);
         });
       }
       
@@ -174,7 +178,7 @@
       const loadRulesBtn = container.querySelector('#load-rules-btn');
       if (loadRulesBtn) {
         loadRulesBtn.addEventListener('click', () => {
-          this.loadRules(container);
+          self.loadRules(container);
         });
       }
     },
@@ -249,10 +253,11 @@
     
     // 添加规则
     addRule: function(container) {
+      const self = this;
       const rulesContainer = container.querySelector('#rules-container');
       if (!rulesContainer) return;
       
-      const ruleCount = this.updateRuleTitles(container);
+      const ruleCount = self.updateRuleTitles(container);
       
       const ruleItem = document.createElement('div');
       ruleItem.className = 'rule-item';
@@ -296,7 +301,7 @@
       // 添加删除规则事件
       ruleItem.querySelector('.btn-rule-delete').addEventListener('click', () => {
         rulesContainer.removeChild(ruleItem);
-        this.updateRuleTitles(container);
+        self.updateRuleTitles(container);
       });
     },
     
@@ -365,9 +370,10 @@
     
     // 加载规则
     loadRules: function(container) {
+      const self = this;
       try {
         // 获取已保存的规则
-        const savedRules = this.getSavedRules();
+        const savedRules = self.getSavedRules();
         const ruleNames = Object.keys(savedRules);
         
         if (ruleNames.length === 0) {
@@ -428,7 +434,7 @@
           const selectedRules = savedRules[selectedName];
           
           if (selectedRules) {
-            this.loadRulesData(container, selectedRules);
+            self.loadRulesData(container, selectedRules);
           }
           
           document.body.removeChild(dialog);
@@ -459,6 +465,7 @@
     
     // 加载规则数据
     loadRulesData: function(container, rulesData) {
+      const self = this;
       // 清空现有规则
       const rulesContainer = container.querySelector('#rules-container');
       rulesContainer.innerHTML = '';
@@ -509,7 +516,7 @@
         if (deleteBtn) {
           deleteBtn.addEventListener('click', () => {
             rulesContainer.removeChild(ruleItem);
-            this.updateRuleTitles(container);
+            self.updateRuleTitles(container);
           });
         }
       });

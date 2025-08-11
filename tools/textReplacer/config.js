@@ -2,7 +2,7 @@
  * 文本替换工具 - 配置模块
  */
 
-const config = {
+window.textReplacerConfig = {
   // 保存用户设置
   saveSettings: function(settings) {
     try {
@@ -24,4 +24,4 @@ const config = {
   }
 };
 
-module.exports = config;
+// 注意：这个模块已经在开头通过 window.textReplacerConfig 注册到全局

@@ -2,7 +2,7 @@
  * 文本替换工具 - 历史记录模块
  */
 
-const history = {
+window.textReplacerHistory = {
   // 添加到历史记录
   addToHistory: function(container, source, result) {
     if (!source || !result || source === result) return;
@@ -66,4 +66,4 @@ const history = {
   }
 };
 
-module.exports = history;
+// 注意：这个模块已经在开头通过 window.textReplacerHistory 注册到全局

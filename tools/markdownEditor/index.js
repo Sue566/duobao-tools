@@ -1,15 +1,9 @@
 /**
- * 多宝工具箱 - 工具模板
- * 
- * 使用说明：
- * 1. 复制此目录并重命名为你的工具名称，如 myTool
- * 2. 修改工具ID、名称、描述和图标
- * 3. 实现工具的界面和功能
- * 4. 在 tools-loader.js 中注册你的工具
+ * Markdown编辑器
  */
 (function() {
   // 定义工具ID
-  const toolId = 'toolTemplate';
+  const toolId = 'markdownEditor';
   
   // 定义工具
   const tool = {
@@ -17,33 +11,6 @@
      * 初始化工具
      */
     init: function() {
-      console.log('多宝工具箱 - 工具模板初始化');
-      
-      // 如果需要加载外部库，可以使用以下代码
-      /*
-      if (!window.ExternalLibrary) {
-        console.log('正在加载外部库...');
-        showToast('正在加载必要组件，请稍候...', 'info');
-        
-        const script = document.createElement('script');
-        script.src = 'https://cdn.example.com/external-library.min.js';
-        document.head.appendChild(script);
-        
-        return new Promise((resolve) => {
-          script.onload = () => {
-            console.log('外部库加载成功');
-            showToast('组件加载完成', 'success');
-            resolve();
-          };
-          script.onerror = () => {
-            console.error('外部库加载失败');
-            showToast('组件加载失败，部分功能可能无法使用', 'error');
-            resolve();
-          };
-        });
-      }
-      */
-      
       return Promise.resolve();
     },
     
@@ -71,27 +38,26 @@
           }
           
           // 初始化UI
-          window.toolTemplateUI.init(container);
+          window.markdownEditorUI.init(container);
         })
         .catch(error => {
-          console.error('加载工具模板失败:', error);
-          container.innerHTML = '<div class="tool-error">加载工具模板失败</div>';
+          console.error('加载Markdown编辑器失败:', error);
+          container.innerHTML = '<div class="tool-error">加载Markdown编辑器失败</div>';
         });
         
       // 返回清理函数
       return function cleanup() {
         // 移除样式
-        const styleLink = document.querySelector(`link[href="tools/${toolId}/styles.css"]`);
+        const styleLink = document.querySelector('link[href="tools/markdownEditor/styles.css"]');
         if (styleLink) {
           document.head.removeChild(styleLink);
         }
         
         // 移除脚本
         const scripts = [
-          `tools/${toolId}/utils.js`,
-          `tools/${toolId}/config.js`,
-          `tools/${toolId}/core.js`,
-          `tools/${toolId}/ui.js`
+          'tools/markdownEditor/utils.js',
+          'tools/markdownEditor/core.js',
+          'tools/markdownEditor/ui.js'
         ];
         
         scripts.forEach(src => {
@@ -111,7 +77,7 @@
     loadTemplate: function(container) {
       return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', `tools/${toolId}/template.html`, true);
+        xhr.open('GET', 'tools/markdownEditor/template.html', true);
         xhr.onload = function() {
           if (xhr.status === 200) {
             container.innerHTML = xhr.responseText;
@@ -135,7 +101,7 @@
       return new Promise((resolve, reject) => {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = `tools/${toolId}/styles.css`;
+        link.href = 'tools/markdownEditor/styles.css';
         link.onload = resolve;
         link.onerror = reject;
         document.head.appendChild(link);
@@ -148,10 +114,9 @@
      */
     loadModules: function() {
       const modules = [
-        `tools/${toolId}/utils.js`,
-        `tools/${toolId}/config.js`,
-        `tools/${toolId}/core.js`,
-        `tools/${toolId}/ui.js`
+        'tools/markdownEditor/utils.js',
+        'tools/markdownEditor/core.js',
+        'tools/markdownEditor/ui.js'
       ];
       
       const promises = modules.map(module => {
@@ -168,6 +133,12 @@
     }
   };
 
-  // 注册工具 (注释掉，仅作为模板)
-  // window.tools.toolId = tool;
+  // 注册工具
+  if (typeof window.registerTool === 'function') {
+    window.registerTool(toolId, tool);
+  } else {
+    window.tools = window.tools || {};
+    window.tools[toolId] = tool;
+    console.log('工具 ' + toolId + ' 已注册');
+  }
 })();

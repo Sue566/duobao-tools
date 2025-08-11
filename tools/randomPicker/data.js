@@ -1,184 +1,271 @@
 /**
- * 随机选择器 - 数据模块
+ * 随机选择器 - 数据管理模块
  */
-
-// 数据模块
-const RandomPickerData = {
-  // 示例数据
-  examples: {
-    // 简单列表示例
-    simpleList: `苹果
-香蕉
-橙子
-葡萄
-西瓜
-芒果
-樱桃
-蓝莓
-草莓
-猕猴桃`,
-
-    // 带权重示例
-    weightedList: `苹果:5
-香蕉:3
-橙子:2
-葡萄:4
-西瓜:1
-芒果:2
-樱桃:3
-蓝莓:2
-草莓:4
-猕猴桃:1`,
-
-    // JSON格式示例
-    jsonList: `[
-  {"name": "苹果", "weight": 5},
-  {"name": "香蕉", "weight": 3},
-  {"name": "橙子", "weight": 2},
-  {"name": "葡萄", "weight": 4},
-  {"name": "西瓜", "weight": 1}
-]`,
-
-    // 分组示例
-    groupList: `# 水果
-苹果, 香蕉, 橙子, 葡萄, 西瓜
-
-# 蔬菜
-胡萝卜, 土豆, 西红柿, 黄瓜, 茄子
-
-# 肉类
-牛肉, 猪肉, 鸡肉, 羊肉, 鱼肉`,
-
-    // 分组JSON示例
-    groupJsonList: `[
-  {
-    "name": "水果",
-    "items": ["苹果", "香蕉", "橙子", "葡萄", "西瓜"]
-  },
-  {
-    "name": "蔬菜",
-    "items": ["胡萝卜", "土豆", "西红柿", "黄瓜", "茄子"]
-  },
-  {
-    "name": "肉类",
-    "items": ["牛肉", "猪肉", "鸡肉", "羊肉", "鱼肉"]
-  }
-]`,
-
-    // 自定义分布示例
-    customDistribution: `0:0.1
-0.2:0.2
-0.4:0.4
-0.6:0.2
-0.8:0.1`,
-
-    // 名字列表示例
-    namesList: `张伟
-王芳
-李娜
-刘洋
-陈明
-赵静
-杨勇
-周婷
-吴强
-郑丽`,
-
-    // 数字列表示例
-    numbersList: `1
-2
-3
-4
-5
-6
-7
-8
-9
-10`,
-
-    // 颜色列表示例
-    colorsList: `红色
-橙色
-黄色
-绿色
-青色
-蓝色
-紫色
-黑色
-白色
-灰色`
-  },
-  
-  // 默认设置
-  defaultSettings: {
-    // 基本设置
-    showAnimation: true,
-    darkMode: false,
-    language: 'zh-CN',
-    
-    // 随机设置
-    defaultPickCount: 1,
-    defaultMode: 'no-repeat',
-    defaultUseWeights: false,
-    
-    // 高级设置
-    maxHistorySize: 50,
-    autoSave: true,
-    confirmClear: true
-  },
-  
-  // 获取用户设置
-  getUserSettings: function() {
-    const savedSettings = localStorage.getItem('randomPickerSettings');
-    if (savedSettings) {
-      try {
-        return {...this.defaultSettings, ...JSON.parse(savedSettings)};
-      } catch (e) {
-        console.error('解析设置出错:', e);
-        return this.defaultSettings;
+(function() {
+  // 数据管理模块
+  window.randomPicker.data = {
+    // 保存列表
+    saveList: function(list) {
+      if (!list.trim()) {
+        window.randomPicker.utils.showToast('列表为空，无法保存', 'warning');
+        return;
       }
-    }
-    return this.defaultSettings;
-  },
-  
-  // 保存用户设置
-  saveUserSettings: function(settings) {
-    localStorage.setItem('randomPickerSettings', JSON.stringify(settings));
-  },
-  
-  // 重置用户设置
-  resetUserSettings: function() {
-    localStorage.removeItem('randomPickerSettings');
-    return this.defaultSettings;
-  },
-  
-  // 加载示例数据
-  loadExample: function(exampleKey) {
-    return this.examples[exampleKey] || '';
-  },
-  
-  // 获取所有示例数据键
-  getExampleKeys: function() {
-    return Object.keys(this.examples);
-  },
-  
-  // 获取示例数据描述
-  getExampleDescription: function(exampleKey) {
-    const descriptions = {
-      simpleList: '简单项目列表',
-      weightedList: '带权重的项目列表',
-      jsonList: 'JSON格式的项目列表',
-      groupList: '分组项目列表',
-      groupJsonList: 'JSON格式的分组列表',
-      customDistribution: '自定义概率分布',
-      namesList: '常用名字列表',
-      numbersList: '数字列表',
-      colorsList: '颜色列表'
-    };
+      
+      // 获取已保存的列表
+      const savedLists = this.getSavedLists();
+      
+      // 创建保存对话框
+      const dialog = document.createElement('div');
+      dialog.className = 'save-dialog';
+      dialog.innerHTML = `
+        <div class="save-dialog-content">
+          <h3>保存列表</h3>
+          <div class="form-group">
+            <label for="list-name">列表名称：</label>
+            <input type="text" id="list-name" class="form-control" placeholder="输入列表名称">
+          </div>
+          <div class="dialog-actions">
+            <button id="save-confirm" class="btn btn-primary">保存</button>
+            <button id="save-cancel" class="btn btn-secondary">取消</button>
+          </div>
+        </div>
+      `;
+      
+      // 添加样式
+      const style = document.createElement('style');
+      style.textContent = `
+        .save-dialog {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+        
+        .save-dialog-content {
+          background-color: white;
+          padding: 20px;
+          border-radius: 4px;
+          width: 300px;
+        }
+        
+        .dialog-actions {
+          margin-top: 15px;
+          display: flex;
+          justify-content: flex-end;
+        }
+      `;
+      
+      document.body.appendChild(style);
+      document.body.appendChild(dialog);
+      
+      // 获取元素
+      const nameInput = dialog.querySelector('#list-name');
+      const saveButton = dialog.querySelector('#save-confirm');
+      const cancelButton = dialog.querySelector('#save-cancel');
+      
+      // 聚焦输入框
+      nameInput.focus();
+      
+      // 绑定事件
+      saveButton.addEventListener('click', () => {
+        const name = nameInput.value.trim();
+        
+        if (!name) {
+          window.randomPicker.utils.showToast('请输入列表名称', 'warning');
+          return;
+        }
+        
+        // 保存列表
+        savedLists[name] = list;
+        localStorage.setItem('randomPickerSavedLists', JSON.stringify(savedLists));
+        
+        // 关闭对话框
+        document.body.removeChild(dialog);
+        document.body.removeChild(style);
+        
+        window.randomPicker.utils.showToast(`列表 "${name}" 已保存`, 'success');
+      });
+      
+      cancelButton.addEventListener('click', () => {
+        document.body.removeChild(dialog);
+        document.body.removeChild(style);
+      });
+      
+      // 按下回车键保存
+      nameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          saveButton.click();
+        }
+      });
+    },
     
-    return descriptions[exampleKey] || exampleKey;
-  }
-};
-
-// 导出模块
-window.RandomPickerData = RandomPickerData;
+    // 加载列表
+    loadList: function(callback) {
+      const savedLists = this.getSavedLists();
+      const listNames = Object.keys(savedLists);
+      
+      if (listNames.length === 0) {
+        window.randomPicker.utils.showToast('没有保存的列表', 'warning');
+        return;
+      }
+      
+      // 创建加载对话框
+      const dialog = document.createElement('div');
+      dialog.className = 'load-dialog';
+      
+      let listOptionsHTML = '';
+      listNames.forEach(name => {
+        listOptionsHTML += `<div class="list-option" data-name="${name}">
+          <div class="list-name">${name}</div>
+          <div class="list-actions">
+            <button class="btn btn-sm btn-danger delete-list" data-name="${name}">删除</button>
+          </div>
+        </div>`;
+      });
+      
+      dialog.innerHTML = `
+        <div class="load-dialog-content">
+          <h3>加载列表</h3>
+          <div class="list-options">
+            ${listOptionsHTML}
+          </div>
+          <div class="dialog-actions">
+            <button id="load-cancel" class="btn btn-secondary">取消</button>
+          </div>
+        </div>
+      `;
+      
+      // 添加样式
+      const style = document.createElement('style');
+      style.textContent = `
+        .load-dialog {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+        
+        .load-dialog-content {
+          background-color: white;
+          padding: 20px;
+          border-radius: 4px;
+          width: 400px;
+          max-height: 80vh;
+          overflow-y: auto;
+        }
+        
+        .list-options {
+          margin: 15px 0;
+          max-height: 300px;
+          overflow-y: auto;
+        }
+        
+        .list-option {
+          padding: 10px;
+          border-bottom: 1px solid #eee;
+          cursor: pointer;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        
+        .list-option:hover {
+          background-color: #f5f5f5;
+        }
+        
+        .list-name {
+          flex: 1;
+        }
+        
+        .dialog-actions {
+          margin-top: 15px;
+          display: flex;
+          justify-content: flex-end;
+        }
+      `;
+      
+      document.body.appendChild(style);
+      document.body.appendChild(dialog);
+      
+      // 获取元素
+      const cancelButton = dialog.querySelector('#load-cancel');
+      const listOptions = dialog.querySelectorAll('.list-option');
+      const deleteButtons = dialog.querySelectorAll('.delete-list');
+      
+      // 绑定事件
+      cancelButton.addEventListener('click', () => {
+        document.body.removeChild(dialog);
+        document.body.removeChild(style);
+      });
+      
+      // 点击列表选项加载列表
+      listOptions.forEach(option => {
+        option.addEventListener('click', (e) => {
+          // 如果点击的是删除按钮，不执行加载操作
+          if (e.target.classList.contains('delete-list') || e.target.closest('.delete-list')) {
+            return;
+          }
+          
+          const name = option.dataset.name;
+          const list = savedLists[name];
+          
+          // 关闭对话框
+          document.body.removeChild(dialog);
+          document.body.removeChild(style);
+          
+          // 回调函数
+          if (callback && typeof callback === 'function') {
+            callback(list);
+          }
+          
+          window.randomPicker.utils.showToast(`列表 "${name}" 已加载`, 'success');
+        });
+      });
+      
+      // 删除列表
+      deleteButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+          e.stopPropagation();
+          
+          const name = button.dataset.name;
+          
+          if (confirm(`确定要删除列表 "${name}" 吗？`)) {
+            delete savedLists[name];
+            localStorage.setItem('randomPickerSavedLists', JSON.stringify(savedLists));
+            
+            // 移除列表选项
+            const option = button.closest('.list-option');
+            option.parentNode.removeChild(option);
+            
+            // 如果没有列表了，关闭对话框
+            if (Object.keys(savedLists).length === 0) {
+              document.body.removeChild(dialog);
+              document.body.removeChild(style);
+              window.randomPicker.utils.showToast('没有保存的列表', 'warning');
+            } else {
+              window.randomPicker.utils.showToast(`列表 "${name}" 已删除`, 'success');
+            }
+          }
+        });
+      });
+    },
+    
+    // 获取保存的列表
+    getSavedLists: function() {
+      const savedLists = localStorage.getItem('randomPickerSavedLists');
+      return savedLists ? JSON.parse(savedLists) : {};
+    }
+  };
+})();

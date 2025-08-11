@@ -65,6 +65,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  color: var(--text-color); /* 添加文字颜色 */
 }
 
 .btn:hover {

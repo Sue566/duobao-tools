@@ -1,140 +1,177 @@
 <div class="tool-header">
-  <h2><i class="fa fa-puzzle-piece"></i> 工具模板</h2>
-  <p class="tool-description">这是一个用于创建新工具的基础模板，提供了常用UI组件和功能示例。</p>
+  <h2><i class="fa fa-wrench"></i> 多宝工具名称</h2>
+  <p class="tool-description">工具描述文本，说明工具的用途和功能。这里应该简明扼要地介绍工具的主要功能和使用场景。</p>
 </div>
 
-<div class="template-container">
-  <div class="template-guide card">
-    <div class="guide-header">
-      <h3>如何使用此模板</h3>
+<div class="tool-container">
+  <!-- 输入区域 -->
+  <div class="tool-input-section">
+    <!-- 文本输入示例 -->
+    <div class="form-group">
+      <label for="input-field">文本输入</label>
+      <textarea id="input-field" class="form-control" rows="5" placeholder="请在此输入需要处理的文本内容..."></textarea>
+      <small class="form-text text-muted">提示信息：支持直接粘贴或拖放文本文件到此处</small>
     </div>
-    <div class="guide-content">
-      <ol>
-        <li>复制 <code>tools/tool-template</code> 目录到 <code>tools/你的工具ID</code></li>
-        <li>修改工具ID、标题和描述</li>
-        <li>实现你的工具功能</li>
-        <li>在 <code>menu.js</code> 中添加你的工具到菜单</li>
-      </ol>
-      <div class="guide-tips">
-        <h4>最佳实践</h4>
-        <ul>
-          <li>使用语义化的HTML结构</li>
-          <li>添加适当的错误处理</li>
-          <li>实现设置保存和加载功能</li>
-          <li>添加响应式设计支持移动设备</li>
-          <li>使用CSS变量确保主题兼容性</li>
-        </ul>
+    
+    <!-- 数字输入示例 -->
+    <div class="form-group">
+      <label for="number-input">数字输入</label>
+      <div class="input-with-unit">
+        <input type="number" id="number-input" class="form-control" value="10" min="0" max="100" step="1" />
+        <span class="unit">单位</span>
       </div>
     </div>
-  </div>
-  
-  <div class="template-demo card">
-    <div class="demo-header">
-      <h3>组件示例</h3>
+    
+    <!-- 选择框示例 -->
+    <div class="form-group">
+      <label for="select-input">下拉选择</label>
+      <select id="select-input" class="form-control">
+        <option value="option1">选项一</option>
+        <option value="option2">选项二</option>
+        <option value="option3">选项三</option>
+      </select>
     </div>
-    <div class="demo-content">
-      <div class="form-section">
-        <h4>表单组件</h4>
-        <div class="form-group">
-          <label for="template-input">文本输入</label>
-          <input type="text" id="template-input" class="form-control" placeholder="请输入内容">
+    
+    <!-- 复选框示例 -->
+    <div class="form-group">
+      <label>复选框选项</label>
+      <div class="options-container">
+        <div class="form-check">
+          <input type="checkbox" id="option1" />
+          <label for="option1">选项1</label>
         </div>
-        
-        <div class="form-group">
-          <label for="template-select">下拉选择</label>
-          <select id="template-select" class="form-control">
-            <option value="option1">选项 1</option>
-            <option value="option2">选项 2</option>
-            <option value="option3">选项 3</option>
-          </select>
+        <div class="form-check">
+          <input type="checkbox" id="option2" />
+          <label for="option2">选项2</label>
         </div>
-        
-        <div class="form-group">
-          <label for="template-textarea">多行文本</label>
-          <textarea id="template-textarea" class="form-control" rows="3" placeholder="请输入多行文本"></textarea>
-        </div>
-        
-        <div class="form-group">
-          <label>复选框</label>
-          <div class="checkbox-group">
-            <label class="checkbox-item">
-              <input type="checkbox" id="template-checkbox1" checked>
-              选项 1
-            </label>
-            <label class="checkbox-item">
-              <input type="checkbox" id="template-checkbox2">
-              选项 2
-            </label>
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label>单选按钮</label>
-          <div class="radio-group">
-            <label class="radio-item">
-              <input type="radio" name="template-radio" id="template-radio1" checked>
-              选项 A
-            </label>
-            <label class="radio-item">
-              <input type="radio" name="template-radio" id="template-radio2">
-              选项 B
-            </label>
-          </div>
-        </div>
-      </div>
-      
-      <div class="button-section">
-        <h4>按钮组件</h4>
-        <div class="button-group">
-          <button id="template-primary-btn" class="btn btn-primary"><i class="fa fa-check"></i> 主要按钮</button>
-          <button id="template-secondary-btn" class="btn"><i class="fa fa-cog"></i> 次要按钮</button>
-          <button id="template-danger-btn" class="btn btn-danger"><i class="fa fa-trash-o"></i> 危险按钮</button>
-        </div>
-      </div>
-      
-      <div class="result-section">
-        <h4>结果展示</h4>
-        <div id="template-result" class="result-container">
-          <div class="placeholder-message">点击上方按钮查看结果</div>
+        <div class="form-check">
+          <input type="checkbox" id="option3" />
+          <label for="option3">选项3</label>
         </div>
       </div>
     </div>
-  </div>
-  
-  <div class="template-settings card">
-    <div class="settings-header">
-      <h3>设置示例</h3>
+    
+    <!-- 单选框示例 -->
+    <div class="form-group">
+      <label>单选框选项</label>
+      <div class="options-container">
+        <div class="form-check">
+          <input type="radio" name="radio-option" id="radio1" value="radio1" checked />
+          <label for="radio1">选项1</label>
+        </div>
+        <div class="form-check">
+          <input type="radio" name="radio-option" id="radio2" value="radio2" />
+          <label for="radio2">选项2</label>
+        </div>
+      </div>
     </div>
-    <div class="settings-content">
-      <div class="form-group">
-        <label for="template-theme">主题</label>
-        <select id="template-theme" class="form-control">
-          <option value="light">浅色</option>
-          <option value="dark">深色</option>
-          <option value="system">跟随系统</option>
-        </select>
+    
+    <!-- 滑块示例 -->
+    <div class="form-group">
+      <label for="slider-input">滑块控制</label>
+      <div class="range-with-value">
+        <input type="range" id="slider-input" min="0" max="100" value="50" />
+        <span id="slider-value">50%</span>
       </div>
-      
-      <div class="form-group">
-        <label for="template-font-size">字体大小</label>
-        <select id="template-font-size" class="form-control">
-          <option value="small">小</option>
-          <option value="medium" selected>中</option>
-          <option value="large">大</option>
-        </select>
-      </div>
-      
-      <div class="form-group">
-        <label class="checkbox-item">
-          <input type="checkbox" id="template-auto-save" checked>
-          自动保存设置
+    </div>
+    
+    <!-- 文件上传示例 -->
+    <div class="form-group">
+      <label for="file-input">文件上传</label>
+      <div class="file-input-container">
+        <input type="file" id="file-input" accept=".txt,.json,.csv" />
+        <label for="file-input" class="file-input-label">
+          <i class="fa fa-upload"></i> 选择文件
         </label>
+        <span id="file-name">未选择文件</span>
       </div>
-      
-      <div class="settings-actions">
-        <button id="template-save-settings" class="btn btn-primary"><i class="fa fa-save"></i> 保存设置</button>
-        <button id="template-reset-settings" class="btn"><i class="fa fa-refresh"></i> 重置设置</button>
+    </div>
+    
+    <!-- 按钮区域 -->
+    <div class="tool-actions">
+      <button id="process-btn" class="btn btn-primary"><i class="fa fa-play"></i> 立即处理</button>
+      <button id="clear-btn" class="btn btn-secondary"><i class="fa fa-trash-o"></i> 清空内容</button>
+      <button id="example-btn" class="btn btn-info"><i class="fa fa-lightbulb-o"></i> 使用示例</button>
+      <button id="settings-btn" class="btn"><i class="fa fa-cog"></i> 高级设置</button>
+    </div>
+  </div>
+  
+  <!-- 结果区域 -->
+  <div class="tool-result-section">
+    <div class="result-header">
+      <h3><i class="fa fa-check-circle"></i> 处理结果</h3>
+      <div class="result-actions">
+        <button id="copy-result" class="btn btn-sm btn-outline"><i class="fa fa-copy"></i> 复制结果</button>
+        <button id="download-result" class="btn btn-sm btn-outline"><i class="fa fa-download"></i> 下载结果</button>
+        <button id="share-result" class="btn btn-sm btn-outline"><i class="fa fa-share-alt"></i> 分享</button>
       </div>
+    </div>
+    
+    <div class="tool-result" id="tool-result">
+      <div class="no-result">
+        <i class="fa fa-info-circle"></i>
+        <p>点击"立即处理"按钮开始</p>
+        <small>结果将在此处显示</small>
+      </div>
+    </div>
+    
+    <!-- 结果统计信息 -->
+    <div class="result-stats" id="result-stats" style="display: none;">
+      <div class="stat-item">
+        <span class="stat-label">处理时间:</span>
+        <span class="stat-value" id="process-time">0 ms</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">结果大小:</span>
+        <span class="stat-value" id="result-size">0 字节</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 工具说明区域 -->
+<div class="tool-info">
+  <div class="info-header">
+    <h3><i class="fa fa-question-circle"></i> 使用指南</h3>
+    <button class="toggle-info-btn" title="展开/收起说明"><i class="fa fa-chevron-up"></i></button>
+  </div>
+  <div class="info-content">
+    <div class="info-item">
+      <h4><i class="fa fa-info-circle"></i> 功能介绍</h4>
+      <p>这个多宝工具可以帮助您快速完成特定任务，提高工作效率。在这里详细介绍工具的功能和适用场景。</p>
+    </div>
+    
+    <div class="info-item">
+      <h4><i class="fa fa-list-ol"></i> 使用步骤</h4>
+      <p>按照以下步骤使用此工具：</p>
+      <ol>
+        <li><strong>输入数据</strong> - 在文本框中输入或粘贴需要处理的内容</li>
+        <li><strong>选择选项</strong> - 根据需要调整处理参数和选项</li>
+        <li><strong>点击处理</strong> - 点击"立即处理"按钮开始操作</li>
+        <li><strong>查看结果</strong> - 在结果区域查看处理后的内容</li>
+        <li><strong>保存结果</strong> - 可以复制或下载处理结果</li>
+      </ol>
+    </div>
+    
+    <div class="info-item">
+      <h4><i class="fa fa-star"></i> 高级技巧</h4>
+      <p>掌握这些技巧，让工具使用更高效：</p>
+      <ul>
+        <li><strong>快捷键</strong> - 使用 <kbd>Ctrl</kbd>+<kbd>Enter</kbd> 快速执行处理操作</li>
+        <li><strong>文件拖放</strong> - 直接将文本文件拖放到输入框中快速导入内容</li>
+        <li><strong>批量处理</strong> - 一次可以处理多行文本，每行将被单独处理</li>
+        <li><strong>设置保存</strong> - 您的处理偏好设置会自动保存，下次使用时自动应用</li>
+      </ul>
+    </div>
+    
+    <div class="info-item">
+      <h4><i class="fa fa-exclamation-triangle"></i> 注意事项</h4>
+      <p>使用本工具时请注意：</p>
+      <ul>
+        <li>处理大量数据可能需要较长时间，请耐心等待</li>
+        <li>敏感数据仅在本地处理，不会上传到服务器</li>
+        <li>建议定期备份重要的处理结果</li>
+      </ul>
     </div>
   </div>
 </div>

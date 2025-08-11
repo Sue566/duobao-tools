@@ -2,9 +2,7 @@
  * 文本替换工具 - 规则管理模块
  */
 
-const utils = require('./utils');
-
-const rules = {
+window.textReplacerRules = {
   // 保存规则
   saveRule: function(container, name, description) {
     const rules = utils.getRulesData(container);

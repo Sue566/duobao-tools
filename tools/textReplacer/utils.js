@@ -2,7 +2,7 @@
  * 文本替换工具 - 工具函数模块
  */
 
-const utils = {
+window.textReplacerUtils = {
   // 转义正则表达式特殊字符
   escapeRegExp: function(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -140,7 +140,4 @@ const utils = {
   }
 };
 
-// 将工具函数注册到全局
-window.textReplacerUtils = utils;
-
-module.exports = utils;
+// 注意：这个模块已经在开头通过 window.textReplacerUtils 注册到全局
