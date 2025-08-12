@@ -374,5 +374,5 @@ const DuobaoNotification = {
   }
 };
 
-// 导出模块
-export { DuobaoNotification };
+// 添加到全局命名空间
+window.DuobaoNotification = DuobaoNotification;

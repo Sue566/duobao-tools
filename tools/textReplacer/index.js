@@ -37,6 +37,10 @@
           return this.loadStyles();
         })
         .then(() => {
+          // 确保工具函数已加载
+          return this.loadUtils();
+        })
+        .then(() => {
           // 添加收藏按钮
           if (typeof window.addFavoriteButton === 'function') {
             const header = container.querySelector('.tool-header');
@@ -47,8 +51,11 @@
           this.setupEvents(container);
           
           // 初始化文本统计
-          const self = this;
-          self.updateTextStats(container);
+          if (window.textReplacerUtils && window.textReplacerUtils.updateTextStats) {
+            window.textReplacerUtils.updateTextStats(container);
+          } else {
+            console.error('textReplacerUtils 未正确加载');
+          }
         })
         .catch(error => {
           console.error('加载文本替换工具失败:', error);
@@ -88,16 +95,40 @@
       });
     },
     
+    // 加载工具函数
+    loadUtils: function() {
+      return new Promise((resolve, reject) => {
+        // 检查是否已经加载
+        if (window.textReplacerUtils) {
+          resolve();
+          return;
+        }
+        
+        // 动态加载utils.js
+        const script = document.createElement('script');
+        script.src = 'tools/textReplacer/utils.js';
+        script.onload = function() {
+          if (window.textReplacerUtils) {
+            resolve();
+          } else {
+            reject(new Error('textReplacerUtils 未正确定义'));
+          }
+        };
+        script.onerror = function() {
+          reject(new Error('无法加载 textReplacer/utils.js'));
+        };
+        document.head.appendChild(script);
+      });
+    },
+    
     // 设置事件处理
     setupEvents: function(container) {
-      // 保存this引用
-      const self = this;
       
       // 源文本输入事件
       const sourceText = container.querySelector('#source-text');
       if (sourceText) {
         sourceText.addEventListener('input', () => {
-          self.updateTextStats(container);
+          window.textReplacerUtils.updateTextStats(container);
         });
       }
       
@@ -105,7 +136,7 @@
       const resultText = container.querySelector('#result-text');
       if (resultText) {
         resultText.addEventListener('input', () => {
-          self.updateTextStats(container);
+          window.textReplacerUtils.updateTextStats(container);
         });
       }
       
@@ -113,7 +144,7 @@
       const replaceBtn = container.querySelector('#replace-btn');
       if (replaceBtn) {
         replaceBtn.addEventListener('click', () => {
-          self.performReplace(container);
+          this.performReplace(container);
         });
       }
       
@@ -121,7 +152,7 @@
       const addRuleBtn = container.querySelector('#add-rule-btn');
       if (addRuleBtn) {
         addRuleBtn.addEventListener('click', () => {
-          self.addRule(container);
+          this.addRule(container);
         });
       }
       
@@ -131,7 +162,9 @@
         clearBtn.addEventListener('click', () => {
           if (sourceText) sourceText.value = '';
           if (resultText) resultText.value = '';
-          self.updateTextStats(container);
+          if (window.textReplacerUtils && window.textReplacerUtils.updateTextStats) {
+            window.textReplacerUtils.updateTextStats(container);
+          }
         });
       }
       
@@ -161,7 +194,9 @@
             const temp = sourceText.value;
             sourceText.value = resultText.value;
             resultText.value = temp;
-            self.updateTextStats(container);
+            if (window.textReplacerUtils && window.textReplacerUtils.updateTextStats) {
+              window.textReplacerUtils.updateTextStats(container);
+            }
           }
         });
       }
@@ -170,7 +205,7 @@
       const saveRulesBtn = container.querySelector('#save-rules-btn');
       if (saveRulesBtn) {
         saveRulesBtn.addEventListener('click', () => {
-          self.saveRules(container);
+          this.saveRules(container);
         });
       }
       
@@ -178,31 +213,14 @@
       const loadRulesBtn = container.querySelector('#load-rules-btn');
       if (loadRulesBtn) {
         loadRulesBtn.addEventListener('click', () => {
-          self.loadRules(container);
+          this.loadRules(container);
         });
       }
     },
     
-    // 更新文本统计信息
+    // 更新文本统计信息 - 使用 window.textReplacerUtils 中的方法
     updateTextStats: function(container) {
-      const sourceText = container.querySelector('#source-text');
-      const resultText = container.querySelector('#result-text');
-      const sourceChars = container.querySelector('#source-chars');
-      const sourceLines = container.querySelector('#source-lines');
-      const resultChars = container.querySelector('#result-chars');
-      const resultLines = container.querySelector('#result-lines');
-      
-      if (sourceText && sourceChars && sourceLines) {
-        const source = sourceText.value;
-        sourceChars.textContent = source.length;
-        sourceLines.textContent = source ? (source.match(/\n/g) || []).length + 1 : 0;
-      }
-      
-      if (resultText && resultChars && resultLines) {
-        const result = resultText.value;
-        resultChars.textContent = result.length;
-        resultLines.textContent = result ? (result.match(/\n/g) || []).length + 1 : 0;
-      }
+      window.textReplacerUtils.updateTextStats(container);
     },
     
     // 执行替换操作
@@ -213,7 +231,7 @@
       if (!sourceText || !resultText) return;
       
       let text = sourceText.value;
-      const rules = this.getRulesData(container);
+      const rules = window.textReplacerUtils.getRulesData(container);
       
       // 应用每条规则
       rules.forEach(rule => {
@@ -236,7 +254,7 @@
           }
         } else {
           // 普通文本替换
-          searchValue = rule.caseSensitive ? rule.search : new RegExp(this.escapeRegExp(rule.search), 'gi');
+          searchValue = rule.caseSensitive ? rule.search : new RegExp(window.textReplacerUtils.escapeRegExp(rule.search), 'gi');
         }
         
         // 执行替换
@@ -245,7 +263,9 @@
       
       // 更新结果
       resultText.value = text;
-      this.updateTextStats(container);
+      if (window.textReplacerUtils && window.textReplacerUtils.updateTextStats) {
+        window.textReplacerUtils.updateTextStats(container);
+      }
       
       // 添加到历史记录
       this.addToHistory(container, sourceText.value, text, rules);
@@ -253,11 +273,10 @@
     
     // 添加规则
     addRule: function(container) {
-      const self = this;
       const rulesContainer = container.querySelector('#rules-container');
       if (!rulesContainer) return;
       
-      const ruleCount = self.updateRuleTitles(container);
+      const ruleCount = window.textReplacerUtils.updateRuleTitles(container);
       
       const ruleItem = document.createElement('div');
       ruleItem.className = 'rule-item';
@@ -301,51 +320,23 @@
       // 添加删除规则事件
       ruleItem.querySelector('.btn-rule-delete').addEventListener('click', () => {
         rulesContainer.removeChild(ruleItem);
-        self.updateRuleTitles(container);
+        window.textReplacerUtils.updateRuleTitles(container);
       });
     },
     
-    // 更新规则标题
+    // 更新规则标题 - 使用 window.textReplacerUtils 中的方法
     updateRuleTitles: function(container) {
-      const rules = container.querySelectorAll('.rule-item');
-      rules.forEach((rule, index) => {
-        const title = rule.querySelector('.rule-title');
-        if (title) {
-          title.textContent = `规则 ${index + 1}`;
-        }
-      });
-      return rules.length;
+      return window.textReplacerUtils.updateRuleTitles(container);
     },
     
-    // 获取规则数据
+    // 获取规则数据 - 使用 window.textReplacerUtils 中的方法
     getRulesData: function(container) {
-      const rules = container.querySelectorAll('.rule-item');
-      const rulesData = [];
-      
-      rules.forEach(rule => {
-        const searchText = rule.querySelector('.search-text').value;
-        const replaceText = rule.querySelector('.replace-text').value;
-        const useRegex = rule.querySelector('.use-regex').checked;
-        const caseSensitive = rule.querySelector('.case-sensitive').checked;
-        const globalMatch = rule.querySelector('.global-match').checked;
-        const multiline = rule.querySelector('.multiline').checked;
-        
-        rulesData.push({
-          search: searchText,
-          replace: replaceText,
-          useRegex: useRegex,
-          caseSensitive: caseSensitive,
-          globalMatch: globalMatch,
-          multiline: multiline
-        });
-      });
-      
-      return rulesData;
+      return window.textReplacerUtils.getRulesData(container);
     },
     
     // 保存规则
     saveRules: function(container) {
-      const rulesData = this.getRulesData(container);
+      const rulesData = window.textReplacerUtils.getRulesData(container);
       if (rulesData.length === 0) return;
       
       const ruleName = prompt('请输入规则集名称:', '我的规则集');
@@ -353,7 +344,7 @@
       
       try {
         // 获取已保存的规则
-        const savedRules = this.getSavedRules();
+        const savedRules = window.textReplacerUtils.getSavedRules();
         
         // 添加新规则集
         savedRules[ruleName] = rulesData;
@@ -370,10 +361,9 @@
     
     // 加载规则
     loadRules: function(container) {
-      const self = this;
       try {
         // 获取已保存的规则
-        const savedRules = self.getSavedRules();
+        const savedRules = window.textReplacerUtils.getSavedRules();
         const ruleNames = Object.keys(savedRules);
         
         if (ruleNames.length === 0) {
@@ -434,7 +424,7 @@
           const selectedRules = savedRules[selectedName];
           
           if (selectedRules) {
-            self.loadRulesData(container, selectedRules);
+            this.loadRulesData(container, selectedRules);
           }
           
           document.body.removeChild(dialog);
@@ -465,63 +455,7 @@
     
     // 加载规则数据
     loadRulesData: function(container, rulesData) {
-      const self = this;
-      // 清空现有规则
-      const rulesContainer = container.querySelector('#rules-container');
-      rulesContainer.innerHTML = '';
-      
-      // 添加新规则
-      rulesData.forEach((rule, index) => {
-        const ruleItem = document.createElement('div');
-        ruleItem.className = 'rule-item';
-        ruleItem.innerHTML = `
-          <div class="rule-header">
-            <span class="rule-title">规则 ${index + 1}</span>
-            <div class="rule-actions">
-              <button class="btn-rule-toggle" title="展开/折叠"><i class="fa fa-chevron-up"></i></button>
-              ${index > 0 ? '<button class="btn-rule-delete" title="删除规则"><i class="fa fa-trash"></i></button>' : ''}
-            </div>
-          </div>
-          <div class="rule-content">
-            <div class="rule-inputs">
-              <input type="text" class="form-control search-text" placeholder="查找内容..." value="${rule.search || ''}" />
-              <span class="rule-arrow"><i class="fa fa-arrow-right"></i></span>
-              <input type="text" class="form-control replace-text" placeholder="替换为..." value="${rule.replace || ''}" />
-            </div>
-            <div class="rule-options">
-              <label><input type="checkbox" class="use-regex" ${rule.useRegex ? 'checked' : ''} /> 使用正则表达式</label>
-              <label><input type="checkbox" class="case-sensitive" ${rule.caseSensitive ? 'checked' : ''} /> 区分大小写</label>
-              <label><input type="checkbox" class="global-match" ${rule.globalMatch ? 'checked' : ''} /> 全局替换</label>
-              <label><input type="checkbox" class="multiline" ${rule.multiline ? 'checked' : ''} /> 多行模式</label>
-            </div>
-          </div>
-        `;
-        rulesContainer.appendChild(ruleItem);
-        
-        // 添加规则折叠/展开事件
-        ruleItem.querySelector('.btn-rule-toggle').addEventListener('click', (e) => {
-          const content = ruleItem.querySelector('.rule-content');
-          const icon = e.currentTarget.querySelector('i');
-          if (content.style.display === 'none') {
-            content.style.display = 'block';
-            icon.className = 'fa fa-chevron-up';
-          } else {
-            content.style.display = 'none';
-            icon.className = 'fa fa-chevron-down';
-          }
-        });
-        
-        // 添加删除规则事件
-        const deleteBtn = ruleItem.querySelector('.btn-rule-delete');
-        if (deleteBtn) {
-          deleteBtn.addEventListener('click', () => {
-            rulesContainer.removeChild(ruleItem);
-            self.updateRuleTitles(container);
-          });
-        }
-      });
-      
-      return rulesData.length;
+      return window.textReplacerUtils.loadRulesData(container, rulesData);
     },
     
     // 添加到历史记录
@@ -530,20 +464,14 @@
       console.log('添加到历史记录', { sourceText, resultText, rules });
     },
     
-    // 获取保存的规则
+    // 获取保存的规则 - 使用 window.textReplacerUtils 中的方法
     getSavedRules: function() {
-      try {
-        const savedRules = localStorage.getItem('textReplacer_savedRules');
-        return savedRules ? JSON.parse(savedRules) : {};
-      } catch (e) {
-        console.error('获取保存的规则失败', e);
-        return {};
-      }
+      return window.textReplacerUtils.getSavedRules();
     },
     
-    // 转义正则表达式特殊字符
+    // 转义正则表达式特殊字符 - 使用 window.textReplacerUtils 中的方法
     escapeRegExp: function(string) {
-      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return window.textReplacerUtils.escapeRegExp(string);
     }
   };
   

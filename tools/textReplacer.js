@@ -28,9 +28,39 @@
       }
     },
     
+    // 确保工具函数已加载
+    ensureUtils: function() {
+      return new Promise((resolve, reject) => {
+        // 检查是否已经加载
+        if (window.textReplacerUtils) {
+          resolve();
+          return;
+        }
+        
+        // 动态加载utils.js
+        const script = document.createElement('script');
+        script.src = 'tools/textReplacer/utils.js';
+        script.onload = function() {
+          if (window.textReplacerUtils) {
+            resolve();
+          } else {
+            reject(new Error('textReplacerUtils 未正确定义'));
+          }
+        };
+        script.onerror = function() {
+          reject(new Error('无法加载 textReplacer/utils.js'));
+        };
+        document.head.appendChild(script);
+      });
+    },
+    
     // 工具初始化
     init: function() {
       console.log('文本替换工具初始化');
+      // 预加载工具函数
+      return this.ensureUtils().catch(err => {
+        console.error('加载工具函数失败:', err);
+      });
     },
     
     render: function(container) {
@@ -345,7 +375,9 @@
         // 添加删除规则事件
         ruleItem.querySelector('.btn-rule-delete').addEventListener('click', () => {
           rulesContainer.removeChild(ruleItem);
-          ruleCounter = window.textReplacerUtils.updateRuleTitles(container);
+          if (window.textReplacerUtils && typeof window.textReplacerUtils.updateRuleTitles === 'function') {
+            ruleCounter = window.textReplacerUtils.updateRuleTitles(container);
+          }
         });
       });
       
@@ -386,7 +418,9 @@
         
         // 重置计数器
         ruleCounter = 1;
-        window.textReplacerUtils.updateRuleTitles(container);
+        if (window.textReplacerUtils && typeof window.textReplacerUtils.updateRuleTitles === 'function') {
+          window.textReplacerUtils.updateRuleTitles(container);
+        }
       });
       
       // 测试规则
@@ -577,7 +611,9 @@
         changesCount.textContent = totalChanges;
         
         // 添加到历史记录
-        window.textReplacerUtils.addToHistory(container, source, result);
+        if (window.textReplacerUtils && typeof window.textReplacerUtils.addToHistory === 'function') {
+          window.textReplacerUtils.addToHistory(container, source, result);
+        }
         
         // 显示成功提示
         showToast(`替换完成！共有 ${totalChanges} 处更改`, 'success');
@@ -588,7 +624,9 @@
         sourceText.value = '';
         resultText.value = '';
         clearRulesBtn.click();
-        window.textReplacerUtils.updateTextStats(container);
+        if (window.textReplacerUtils && typeof window.textReplacerUtils.updateTextStats === 'function') {
+          window.textReplacerUtils.updateTextStats(container);
+        }
       });
       
       // 交换源文本和结果
@@ -596,7 +634,9 @@
         const temp = sourceText.value;
         sourceText.value = resultText.value;
         resultText.value = temp;
-        window.textReplacerUtils.updateTextStats(container);
+        if (window.textReplacerUtils && typeof window.textReplacerUtils.updateTextStats === 'function') {
+          window.textReplacerUtils.updateTextStats(container);
+        }
       });
       
       // 复制结果
@@ -804,15 +844,21 @@
       
       // 初始化文本统计
       sourceText.addEventListener('input', () => {
-        window.textReplacerUtils.updateTextStats(container);
+        if (window.textReplacerUtils && typeof window.textReplacerUtils.updateTextStats === 'function') {
+          window.textReplacerUtils.updateTextStats(container);
+        }
       });
       
       resultText.addEventListener('input', () => {
-        window.textReplacerUtils.updateTextStats(container);
+        if (window.textReplacerUtils && typeof window.textReplacerUtils.updateTextStats === 'function') {
+          window.textReplacerUtils.updateTextStats(container);
+        }
       });
       
       // 初始化统计信息
-      window.textReplacerUtils.updateTextStats(container);
+      if (window.textReplacerUtils && typeof window.textReplacerUtils.updateTextStats === 'function') {
+        window.textReplacerUtils.updateTextStats(container);
+      }
       
       // 添加样式
       const style = document.createElement('style');

@@ -348,5 +348,5 @@ const DuobaoDrawer = {
   }
 };
 
-// 导出模块
-export { DuobaoDrawer };
+// 添加到全局命名空间
+window.DuobaoDrawer = DuobaoDrawer;

@@ -1,88 +1,141 @@
 <div class="case-converter-container">
+  <div id="breadcrumb" class="breadcrumb">
+    <a href="#" onclick="showHomepage(); return false;"><i class="fa fa-home"></i> 首页</a>
+    <span class="separator"><i class="fa fa-angle-right"></i></span>
+    <a href="#" onclick="showCategory('text'); return false;">文本处理</a>
+    <span class="separator"><i class="fa fa-angle-right"></i></span>
+    <span class="current">大小写转换</span>
+  </div>
+
   <div class="tool-header">
-    <h2>大小写转换工具</h2>
-    <div class="tool-description">
-      转换文本大小写、格式化文本和应用常见文本转换
+    <div class="tool-header-content">
+      <h2><i class="fa fa-text-height"></i> 大小写转换工具</h2>
+      <div class="tool-description">
+        快速转换文本大小写、格式化文本和应用常见文本转换
+      </div>
+    </div>
+    <div class="tool-actions">
+      <button id="help-button" class="btn btn-icon" title="使用帮助"><i class="fa fa-question-circle"></i></button>
+      <button id="settings-button" class="btn btn-icon" title="设置"><i class="fa fa-cog"></i></button>
     </div>
   </div>
   
   <div class="case-converter-main">
     <div class="input-section">
       <div class="input-header">
-        <div class="input-title">输入文本</div>
+        <div class="input-title"><i class="fa fa-pencil"></i> 输入文本</div>
         <div class="input-actions">
-          <button id="clear-input" class="btn btn-sm btn-outline">清空</button>
-          <button id="paste-input" class="btn btn-sm btn-outline">粘贴</button>
+          <button id="clear-input" class="btn btn-sm btn-outline" title="清空"><i class="fa fa-eraser"></i> 清空</button>
+          <button id="paste-input" class="btn btn-sm btn-outline" title="粘贴"><i class="fa fa-clipboard"></i> 粘贴</button>
+          <button id="upload-input" class="btn btn-sm btn-outline" title="上传文件"><i class="fa fa-upload"></i></button>
         </div>
       </div>
-      <textarea id="case-input" placeholder="在此输入或粘贴文本..."></textarea>
+      <div class="textarea-wrapper">
+        <textarea id="case-input" placeholder="在此输入或粘贴文本..."></textarea>
+        <div class="textarea-overlay" id="input-overlay"></div>
+      </div>
       <div class="input-stats">
-        <span id="char-count">0</span> 个字符 | 
-        <span id="word-count">0</span> 个单词 | 
-        <span id="line-count">0</span> 行
+        <div class="stats-item"><i class="fa fa-font"></i> <span id="char-count">0</span> 个字符</div>
+        <div class="stats-item"><i class="fa fa-file-text-o"></i> <span id="word-count">0</span> 个单词</div>
+        <div class="stats-item"><i class="fa fa-bars"></i> <span id="line-count">0</span> 行</div>
       </div>
     </div>
     
     <div class="conversion-options">
       <div class="conversion-group">
-        <div class="group-title">基本转换</div>
+        <div class="group-title"><i class="fa fa-exchange"></i> 基本转换</div>
         <div class="button-group">
-          <button id="to-upper" class="btn">转大写</button>
-          <button id="to-lower" class="btn">转小写</button>
-          <button id="to-title" class="btn">首字母大写</button>
-          <button id="to-sentence" class="btn">句首大写</button>
-          <button id="to-toggle" class="btn">大小写互换</button>
+          <button id="to-upper" class="btn btn-action"><i class="fa fa-arrow-up"></i> 转大写</button>
+          <button id="to-lower" class="btn btn-action"><i class="fa fa-arrow-down"></i> 转小写</button>
+          <button id="to-title" class="btn btn-action"><i class="fa fa-header"></i> 首字母大写</button>
+          <button id="to-sentence" class="btn btn-action"><i class="fa fa-align-left"></i> 句首大写</button>
+          <button id="to-toggle" class="btn btn-action"><i class="fa fa-random"></i> 大小写互换</button>
         </div>
       </div>
       
       <div class="conversion-group">
-        <div class="group-title">编程风格</div>
+        <div class="group-title"><i class="fa fa-code"></i> 编程风格</div>
         <div class="button-group">
-          <button id="to-camel" class="btn">驼峰命名(camelCase)</button>
-          <button id="to-pascal" class="btn">帕斯卡(PascalCase)</button>
-          <button id="to-snake" class="btn">蛇形命名(snake_case)</button>
-          <button id="to-kebab" class="btn">短横线(kebab-case)</button>
-          <button id="to-constant" class="btn">常量(CONSTANT_CASE)</button>
+          <button id="to-camel" class="btn btn-action"><i class="fa fa-code"></i> 驼峰命名</button>
+          <button id="to-pascal" class="btn btn-action"><i class="fa fa-code"></i> 帕斯卡</button>
+          <button id="to-snake" class="btn btn-action"><i class="fa fa-code"></i> 蛇形命名</button>
+          <button id="to-kebab" class="btn btn-action"><i class="fa fa-code"></i> 短横线</button>
+          <button id="to-constant" class="btn btn-action"><i class="fa fa-code"></i> 常量</button>
         </div>
       </div>
       
       <div class="conversion-group">
-        <div class="group-title">特殊处理</div>
+        <div class="group-title"><i class="fa fa-magic"></i> 特殊处理</div>
         <div class="button-group">
-          <button id="remove-spaces" class="btn">移除空格</button>
-          <button id="trim-lines" class="btn">修剪行首尾空格</button>
-          <button id="remove-empty-lines" class="btn">移除空行</button>
-          <button id="add-line-numbers" class="btn">添加行号</button>
-          <button id="sort-lines" class="btn">行排序</button>
+          <button id="remove-spaces" class="btn btn-action"><i class="fa fa-compress"></i> 移除空格</button>
+          <button id="trim-lines" class="btn btn-action"><i class="fa fa-scissors"></i> 修剪空格</button>
+          <button id="remove-empty-lines" class="btn btn-action"><i class="fa fa-minus-square"></i> 移除空行</button>
+          <button id="add-line-numbers" class="btn btn-action"><i class="fa fa-list-ol"></i> 添加行号</button>
+          <button id="sort-lines" class="btn btn-action"><i class="fa fa-sort-alpha-asc"></i> 行排序</button>
         </div>
       </div>
     </div>
     
     <div class="output-section">
       <div class="output-header">
-        <div class="output-title">转换结果</div>
+        <div class="output-title"><i class="fa fa-check-circle"></i> 转换结果</div>
         <div class="output-actions">
-          <button id="copy-output" class="btn btn-sm btn-primary">复制结果</button>
-          <button id="save-output" class="btn btn-sm btn-outline">保存到文件</button>
+          <button id="copy-output" class="btn btn-sm btn-primary" title="复制结果"><i class="fa fa-copy"></i> 复制</button>
+          <button id="save-output" class="btn btn-sm btn-outline" title="保存到文件"><i class="fa fa-download"></i> 保存</button>
+          <button id="share-output" class="btn btn-sm btn-outline" title="分享"><i class="fa fa-share-alt"></i></button>
         </div>
       </div>
-      <textarea id="case-output" placeholder="转换结果将显示在这里..." readonly></textarea>
+      <div class="textarea-wrapper">
+        <textarea id="case-output" placeholder="转换结果将显示在这里..." readonly></textarea>
+        <div class="textarea-overlay" id="output-overlay"></div>
+      </div>
       <div class="output-stats">
-        <span id="output-char-count">0</span> 个字符 | 
-        <span id="output-word-count">0</span> 个单词 | 
-        <span id="output-line-count">0</span> 行
+        <div class="stats-item"><i class="fa fa-font"></i> <span id="output-char-count">0</span> 个字符</div>
+        <div class="stats-item"><i class="fa fa-file-text-o"></i> <span id="output-word-count">0</span> 个单词</div>
+        <div class="stats-item"><i class="fa fa-bars"></i> <span id="output-line-count">0</span> 行</div>
       </div>
     </div>
   </div>
   
   <div class="history-section">
     <div class="history-header">
-      <div class="history-title">转换历史</div>
-      <button id="clear-history" class="btn btn-sm btn-outline">清空历史</button>
+      <div class="history-title"><i class="fa fa-history"></i> 转换历史</div>
+      <div class="history-actions">
+        <button id="export-history" class="btn btn-sm btn-outline" title="导出历史"><i class="fa fa-download"></i></button>
+        <button id="clear-history" class="btn btn-sm btn-outline" title="清空历史"><i class="fa fa-trash"></i> 清空</button>
+      </div>
     </div>
     <div id="history-list" class="history-list">
       <!-- 历史记录将在这里动态生成 -->
-      <div class="no-history">暂无历史记录</div>
+      <div class="no-history"><i class="fa fa-info-circle"></i> 暂无历史记录</div>
+    </div>
+  </div>
+  
+  <!-- 帮助对话框 -->
+  <div id="help-dialog" class="dialog">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <h3><i class="fa fa-question-circle"></i> 使用帮助</h3>
+        <button class="dialog-close"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="dialog-body">
+        <h4>基本转换</h4>
+        <ul>
+          <li><strong>转大写</strong>：将所有字母转换为大写</li>
+          <li><strong>转小写</strong>：将所有字母转换为小写</li>
+          <li><strong>首字母大写</strong>：每个单词的首字母大写</li>
+          <li><strong>句首大写</strong>：每个句子的首字母大写</li>
+          <li><strong>大小写互换</strong>：大写变小写，小写变大写</li>
+        </ul>
+        <h4>编程风格</h4>
+        <ul>
+          <li><strong>驼峰命名</strong>：第一个单词小写，后续单词首字母大写 (camelCase)</li>
+          <li><strong>帕斯卡</strong>：所有单词首字母大写 (PascalCase)</li>
+          <li><strong>蛇形命名</strong>：单词小写，用下划线连接 (snake_case)</li>
+          <li><strong>短横线</strong>：单词小写，用连字符连接 (kebab-case)</li>
+          <li><strong>常量</strong>：所有字母大写，用下划线连接 (CONSTANT_CASE)</li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>

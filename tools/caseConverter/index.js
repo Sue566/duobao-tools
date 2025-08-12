@@ -25,6 +25,9 @@
       // 添加收藏按钮
       window.addFavoriteButton('caseConverter', container.querySelector('.tool-header'));
       
+      // 初始化面包屑导航
+      this.initBreadcrumb(container);
+      
       // 初始化各个模块
       const utils = window.caseConverterUtils;
       const converter = window.caseConverterCore;
@@ -53,6 +56,9 @@
         utils.updateTextStats(inputTextarea, charCount, wordCount, lineCount);
       }
       
+      // 初始化帮助对话框
+      this.initHelpDialog(container);
+      
       // 返回清理函数
       return function() {
         // 移除样式
@@ -61,6 +67,69 @@
           document.head.removeChild(styleLink);
         }
       };
+    },
+    
+    /**
+     * 初始化面包屑导航
+     * @param {HTMLElement} container - 工具容器
+     */
+    initBreadcrumb: function(container) {
+      const breadcrumbItems = container.querySelectorAll('.breadcrumb-item');
+      
+      breadcrumbItems.forEach(item => {
+        if (item.classList.contains('current')) return;
+        
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          const page = item.getAttribute('data-page');
+          const category = item.getAttribute('data-category');
+          
+          if (page === 'home') {
+            // 跳转到首页
+            if (typeof showHomepage === 'function') {
+              showHomepage();
+            } else {
+              window.location.hash = '';
+            }
+          } else if (category) {
+            // 跳转到分类页面
+            if (typeof showCategory === 'function') {
+              showCategory(category);
+            } else {
+              window.location.hash = `category/${category}`;
+            }
+          }
+        });
+      });
+    },
+    
+    /**
+     * 初始化帮助对话框
+     * @param {HTMLElement} container - 工具容器
+     */
+    initHelpDialog: function(container) {
+      const helpButton = container.querySelector('#help-button');
+      const helpDialog = container.querySelector('#help-dialog');
+      const closeButton = helpDialog?.querySelector('.dialog-close');
+      
+      if (helpButton && helpDialog) {
+        helpButton.addEventListener('click', () => {
+          helpDialog.style.display = 'flex';
+        });
+        
+        if (closeButton) {
+          closeButton.addEventListener('click', () => {
+            helpDialog.style.display = 'none';
+          });
+        }
+        
+        // 点击对话框外部关闭
+        helpDialog.addEventListener('click', (e) => {
+          if (e.target === helpDialog) {
+            helpDialog.style.display = 'none';
+          }
+        });
+      }
     }
   };
   
