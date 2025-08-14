@@ -1,0 +1,61 @@
+/**
+ * 布局修复 - 使右侧内容铺满
+ */
+
+/* 修复主容器布局 */
+.container {
+  display: flex;
+  min-height: calc(100vh - 60px - 200px); /* 减去头部和底部的高度 */
+  width: 100%;
+}
+
+/* 修复侧边栏宽度 */
+aside {
+  width: 250px;
+  min-width: 250px; /* 确保侧边栏不会被压缩 */
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  transition: var(--transition);
+}
+
+/* 修复主内容区域 */
+main {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  transition: var(--transition);
+  width: calc(100% - 250px); /* 确保主内容区域占据剩余宽度 */
+}
+
+/* 修复工具内容区域 */
+#content {
+  width: 100%;
+  max-width: none; /* 移除最大宽度限制 */
+  margin: 0;
+  position: relative;
+}
+
+/* 工具容器样式 */
+.tool-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  
+  aside {
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  main {
+    width: 100%;
+  }
+}

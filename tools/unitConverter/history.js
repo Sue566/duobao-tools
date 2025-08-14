@@ -36,7 +36,7 @@ const UnitConverterHistory = {
   
   // 更新历史记录显示
   updateHistoryDisplay: function() {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const historyContent = container.querySelector('#history-content');
     
     const history = JSON.parse(localStorage.getItem('unitConversionHistory') || '[]');
@@ -143,7 +143,7 @@ const UnitConverterHistory = {
   
   // 更新收藏夹显示
   updateFavoritesDisplay: function() {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const favoritesContent = container.querySelector('#favorites-content');
     
     const favorites = JSON.parse(localStorage.getItem('unitConversionFavorites') || '[]');

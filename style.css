@@ -343,7 +343,7 @@ kbd {
 
 /* 工具内容样式 */
 #content {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   position: relative;
 }

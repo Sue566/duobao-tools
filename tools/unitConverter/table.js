@@ -6,7 +6,7 @@
 const UnitConverterTable = {
   // 生成换算表
   generateConversionTable: function() {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const tableCategory = container.querySelector('#table-category');
     const tableContent = container.querySelector('#table-content');
     
@@ -96,7 +96,7 @@ const UnitConverterTable = {
   
   // 导出表格为CSV
   exportTableToCSV: function() {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const tableCategory = container.querySelector('#table-category');
     
     const category = tableCategory.value;
@@ -143,7 +143,7 @@ const UnitConverterTable = {
   
   // 打印表格
   printConversionTable: function() {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const tableCategory = container.querySelector('#table-category');
     const tableContent = container.querySelector('#table-content');
     

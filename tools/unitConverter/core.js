@@ -6,7 +6,7 @@
 const UnitConverterCore = {
   // 填充单位选择器
   populateUnitSelectors: function(category) {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const fromUnit = container.querySelector('#from-unit');
     const toUnit = container.querySelector('#to-unit');
     const formulaContent = container.querySelector('#formula-content');
@@ -34,7 +34,7 @@ const UnitConverterCore = {
   
   // 更新公式显示
   updateFormula: function(category) {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const formulaContent = container.querySelector('#formula-content');
     
     const categoryData = UnitConverterData.units[category];
@@ -43,7 +43,7 @@ const UnitConverterCore = {
   
   // 执行单位转换
   convertUnits: function() {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const categorySelect = container.querySelector('#unit-category');
     const fromValue = container.querySelector('#from-value');
     const fromUnit = container.querySelector('#from-unit');
@@ -62,14 +62,35 @@ const UnitConverterCore = {
     }
     
     let result;
+    let allResults = [];
     
     // 特殊处理温度转换
     if (category === 'temperature') {
       result = this.convertTemperature(value, fromUnitId, toUnitId);
+      
+      // 计算所有温度单位的结果用于图表
+      const tempUnits = ['celsius', 'fahrenheit', 'kelvin', 'rankine', 'reaumur'];
+      allResults = tempUnits.map(unit => {
+        const unitName = categoryData.units.find(u => u.id === unit).name;
+        return {
+          unit: unitName,
+          value: UnitConverterUtils.formatResult(this.convertTemperature(value, fromUnitId, unit))
+        };
+      });
     } 
     // 特殊处理燃油效率转换
     else if (category === 'fuel') {
       result = this.convertFuelEfficiency(value, fromUnitId, toUnitId);
+      
+      // 计算所有燃油效率单位的结果用于图表
+      const fuelUnits = ['km_per_l', 'l_per_100km', 'mpg_us', 'mpg_uk'];
+      allResults = fuelUnits.map(unit => {
+        const unitName = categoryData.units.find(u => u.id === unit).name;
+        return {
+          unit: unitName,
+          value: UnitConverterUtils.formatResult(this.convertFuelEfficiency(value, fromUnitId, unit))
+        };
+      });
     } else {
       // 通用转换方法
       const fromUnitData = categoryData.units.find(u => u.id === fromUnitId);
@@ -81,6 +102,14 @@ const UnitConverterCore = {
       }
       
       result = value * (fromUnitData.factor / toUnitData.factor);
+      
+      // 计算所有单位的结果用于图表
+      allResults = categoryData.units.map(unit => {
+        return {
+          unit: unit.name,
+          value: UnitConverterUtils.formatResult(value * (fromUnitData.factor / unit.factor))
+        };
+      });
     }
     
     // 显示结果
@@ -88,6 +117,29 @@ const UnitConverterCore = {
     
     // 添加到历史记录
     UnitConverterHistory.addToHistory(category, value, fromUnitId, result, toUnitId);
+    
+    // 保存结果用于图表显示
+    this.lastConversionResults = {
+      value: value,
+      fromUnit: fromUnit.options[fromUnit.selectedIndex].text,
+      results: allResults
+    };
+  },
+  
+  // 显示转换图表
+  showConversionChart: function() {
+    if (!this.lastConversionResults) {
+      UnitConverterUtils.showToast('请先进行单位转换', 'warning');
+      return;
+    }
+    
+    if (window.UnitConverterChart) {
+      window.UnitConverterChart.showChart(
+        this.lastConversionResults.value,
+        this.lastConversionResults.fromUnit,
+        this.lastConversionResults.results
+      );
+    }
   },
   
   // 温度转换

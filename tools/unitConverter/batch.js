@@ -6,7 +6,7 @@
 const UnitConverterBatch = {
   // 填充批量转换单位选择器
   populateBatchUnitSelectors: function(category) {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const batchFromUnit = container.querySelector('#batch-from-unit');
     const batchToUnit = container.querySelector('#batch-to-unit');
     
@@ -30,7 +30,7 @@ const UnitConverterBatch = {
   
   // 执行批量转换
   batchConvert: function() {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const batchCategory = container.querySelector('#batch-category');
     const batchFromUnit = container.querySelector('#batch-from-unit');
     const batchToUnit = container.querySelector('#batch-to-unit');
@@ -137,7 +137,7 @@ const UnitConverterBatch = {
   
   // 清空批量转换输入和输出
   clearBatch: function() {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const batchInput = container.querySelector('#batch-input');
     const batchOutput = container.querySelector('#batch-output');
     
@@ -147,7 +147,7 @@ const UnitConverterBatch = {
   
   // 复制批量转换结果
   copyBatchResult: function() {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const batchOutput = container.querySelector('#batch-output');
     
     if (batchOutput.value) {

@@ -6,7 +6,7 @@
 const UnitConverterCustom = {
   // 更新自定义单位列表
   updateCustomUnitsList: function() {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const customCategory = container.querySelector('#custom-category');
     const customUnitsList = container.querySelector('#custom-units-list');
     
@@ -46,7 +46,7 @@ const UnitConverterCustom = {
   
   // 添加自定义单位
   addCustomUnit: function() {
-    const container = document.getElementById('random-picker-container').closest('.tool-container');
+    const container = document.querySelector('.unit-converter-container').closest('.tool-container');
     const customCategory = container.querySelector('#custom-category');
     const customId = container.querySelector('#custom-id');
     const customName = container.querySelector('#custom-name');
@@ -133,7 +133,7 @@ const UnitConverterCustom = {
           UnitConverterData.loadCustomUnits();
           
           // 更新选择器
-          const container = document.getElementById('random-picker-container').closest('.tool-container');
+          const container = document.querySelector('.unit-converter-container').closest('.tool-container');
           const categorySelect = container.querySelector('#unit-category');
           UnitConverterCore.populateUnitSelectors(categorySelect.value);
           
@@ -160,7 +160,7 @@ const UnitConverterCustom = {
       UnitConverterData.init();
       
       // 更新选择器
-      const container = document.getElementById('random-picker-container').closest('.tool-container');
+      const container = document.querySelector('.unit-converter-container').closest('.tool-container');
       const categorySelect = container.querySelector('#unit-category');
       UnitConverterCore.populateUnitSelectors(categorySelect.value);
       

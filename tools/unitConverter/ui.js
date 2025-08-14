@@ -280,6 +280,42 @@ const UnitConverterUI = {
         margin-bottom: 30px;
       }
       
+      /* 美化工具标题 */
+      .tool-header {
+        background: linear-gradient(135deg, #4a90e2, #6a5acd);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .tool-header::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        z-index: 0;
+      }
+      
+      .tool-header h2 {
+        margin-top: 0;
+        display: flex;
+        align-items: center;
+        font-size: 24px;
+      }
+      
+      .tool-header h2 i {
+        margin-right: 10px;
+        font-size: 28px;
+      }
+      
       .tab-header {
         display: flex;
         border-bottom: 1px solid var(--border-color);
@@ -288,7 +324,7 @@ const UnitConverterUI = {
       }
       
       .tab-btn {
-        padding: 10px 20px;
+        padding: 12px 20px;
         background: none;
         border: none;
         border-bottom: 2px solid transparent;
@@ -296,11 +332,18 @@ const UnitConverterUI = {
         font-weight: 500;
         color: var(--text-color);
         white-space: nowrap;
+        transition: all 0.3s ease;
+        border-radius: 6px 6px 0 0;
+      }
+      
+      .tab-btn:hover {
+        background-color: rgba(0, 0, 0, 0.05);
       }
       
       .tab-btn.active {
         border-bottom-color: var(--primary-color);
         color: var(--primary-color);
+        background-color: rgba(74, 144, 226, 0.1);
       }
       
       .tab-content {
@@ -315,6 +358,10 @@ const UnitConverterUI = {
         display: flex;
         flex-direction: column;
         gap: 20px;
+        background-color: var(--card-bg);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
       
       .batch-settings {
@@ -345,6 +392,10 @@ const UnitConverterUI = {
         display: flex;
         flex-direction: column;
         gap: 20px;
+        background-color: var(--card-bg);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
       
       .table-header {
@@ -403,6 +454,10 @@ const UnitConverterUI = {
         display: flex;
         flex-direction: column;
         gap: 30px;
+        background-color: var(--card-bg);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
       
       .custom-form {
@@ -521,6 +576,10 @@ const UnitConverterUI = {
         display: flex;
         align-items: center;
         gap: 15px;
+        background-color: var(--card-bg);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
       
       .unit-input-section {
@@ -537,6 +596,46 @@ const UnitConverterUI = {
       .unit-actions {
         display: flex;
         gap: 10px;
+        margin-top: 15px;
+      }
+      
+      .btn {
+        transition: all 0.2s ease;
+        border-radius: 6px;
+        font-weight: 500;
+        padding: 8px 16px;
+      }
+      
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      
+      .btn-success {
+        background: linear-gradient(to right, #4a90e2, #5e72e4);
+        border: none;
+      }
+      
+      .btn-success:hover {
+        background: linear-gradient(to right, #3a80d2, #4e62d4);
+      }
+      
+      .btn-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+      }
+      
+      .btn-icon:hover {
+        background-color: var(--primary-color);
+        color: white;
+        transform: rotate(180deg);
       }
       
       .unit-formula {
@@ -544,7 +643,8 @@ const UnitConverterUI = {
         border: 1px solid var(--border-color);
         border-radius: 8px;
         overflow: hidden;
-        margin-bottom: 30px;
+        margin: 25px 0;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
       }
       
       .formula-header {
@@ -560,6 +660,9 @@ const UnitConverterUI = {
         padding: 15px;
         font-family: monospace;
         white-space: pre-wrap;
+        background-color: rgba(0, 0, 0, 0.02);
+        border-radius: 4px;
+        color: #333;
       }
       
       .unit-history {
@@ -567,6 +670,8 @@ const UnitConverterUI = {
         border: 1px solid var(--border-color);
         border-radius: 8px;
         overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
       }
       
       .history-header {
@@ -589,8 +694,14 @@ const UnitConverterUI = {
       
       .history-item {
         margin-bottom: 15px;
-        padding-bottom: 15px;
+        padding: 12px;
         border-bottom: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+        border-radius: 6px;
+      }
+      
+      .history-item:hover {
+        background-color: rgba(0, 0, 0, 0.02);
       }
       
       .history-item:last-child {
