@@ -43,11 +43,12 @@ window.menu = [
   {
     title: '开发工具',
     icon: 'fas fa-code',
-    count: 3,
+    count: 4,
     children: [
       { title: 'JSON格式化', tool: 'jsonFormatter' },
       { title: '正则表达式测试', tool: 'regexTester' },
-      { title: 'UUID生成器', tool: 'uuidGenerator' }
+      { title: 'UUID生成器', tool: 'uuidGenerator' },
+      { title: '开发命令速查', tool: 'devCommands' }
     ]
   },
   {

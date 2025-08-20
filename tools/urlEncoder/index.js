@@ -313,11 +313,20 @@
     }
   };
 
-  // 注册工具
-  if (typeof window.registerTool === 'function') {
-    window.registerTool(toolId, tool);
+  // 将工具对象暴露给主模块
+  if (window.tools && window.tools.urlEncoder) {
+    // 如果主模块已经存在，则扩展它
+    Object.assign(window.tools.urlEncoder, {
+      _internalTool: tool
+    });
   } else {
-    window.tools[toolId] = tool;
-    console.log('工具 ' + toolId + ' 已注册');
+    // 如果主模块不存在，则创建它
+    window.tools = window.tools || {};
+    window.tools.urlEncoder = {
+      _internalTool: tool,
+      render: function(container) {
+        return tool.render(container);
+      }
+    };
   }
 })();

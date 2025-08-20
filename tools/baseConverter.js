@@ -1,36 +1,57 @@
-window.tools.baseConverter = {
-  render(target) {
-    target.innerHTML = `
-      <h2>进制转换</h2>
-      <div class="convert-row">
-        <input id="number-input" placeholder="输入数字" />
-      <select id="from-base">
-        <option value="10">10进制</option>
-        <option value="2">2进制</option>
-        <option value="16">16进制</option>
-      </select>
-      <span>→</span>
-      <select id="to-base">
-        <option value="2">2进制</option>
-        <option value="10">10进制</option>
-        <option value="16">16进制</option>
-      </select>
-      <button onclick="convertBase()">转换</button>
-    </div>
-    <input id="number-output" placeholder="输出结果" readonly />
-  `;
-  }
-};
+/**
+ * 多宝工具箱 - 进制转换工具
+ * 主入口文件
+ */
 
-window.convertBase = function() {
-  const val = document.getElementById('number-input').value.trim();
-  const fromBase = parseInt(document.getElementById('from-base').value);
-  const toBase = parseInt(document.getElementById('to-base').value);
-  if (!val) return;
-  const parsed = parseInt(val, fromBase);
-  if (isNaN(parsed)) {
-    alert('输入格式错误');
-    return;
+// 主工具对象
+window.tools = window.tools || {};
+window.tools.baseConverter = {
+  /**
+   * 渲染工具
+   * @param {HTMLElement} target - 目标容器
+   * @returns {Promise} 渲染完成的Promise
+   */
+  render: async function(target) {
+    try {
+      // 动态加载脚本
+      await this.loadScript('tools/baseConverter/index.js');
+      
+      // 初始化工具
+      if (window.tools.baseConverter && window.tools.baseConverter.render) {
+        return window.tools.baseConverter.render(target);
+      } else {
+        throw new Error('工具模块加载失败');
+      }
+    } catch (error) {
+      console.error('加载进制转换工具失败:', error);
+      target.innerHTML = `
+        <div class="error-message" style="padding: 20px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">工具加载失败</h3>
+          <p>加载进制转换工具时发生错误，请刷新页面重试。</p>
+          <p>错误详情: ${error.message}</p>
+        </div>
+      `;
+    }
+  },
+  
+  /**
+   * 加载脚本
+   * @param {string} src - 脚本路径
+   * @returns {Promise} 加载完成的Promise
+   */
+  loadScript: function(src) {
+    return new Promise((resolve, reject) => {
+      // 检查脚本是否已加载
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve();
+        return;
+      }
+      
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
   }
-  document.getElementById('number-output').value = parsed.toString(toBase);
 };

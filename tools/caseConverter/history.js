@@ -38,7 +38,9 @@ window.caseConverterHistory = {
         this.historyItems = [];
         localStorage.removeItem('caseConverterHistory');
         this.renderHistory();
-        this.utils.showToast('历史记录已清空', 'success');
+        if (this.utils && typeof this.utils.showToast === 'function') {
+          this.utils.showToast('历史记录已清空', 'success');
+        }
       });
     }
   },
@@ -70,7 +72,11 @@ window.caseConverterHistory = {
     }
     
     // 保存到本地存储
-    localStorage.setItem('caseConverterHistory', JSON.stringify(this.historyItems));
+    try {
+      localStorage.setItem('caseConverterHistory', JSON.stringify(this.historyItems));
+    } catch (error) {
+      console.error('保存历史记录失败:', error);
+    }
     
     // 更新历史记录显示
     this.renderHistory();
@@ -96,8 +102,8 @@ window.caseConverterHistory = {
   renderHistory: function() {
     if (!this.historyList) return;
     
-    if (this.historyItems.length === 0) {
-      this.historyList.innerHTML = '<div class="no-history">暂无历史记录</div>';
+    if (!this.historyItems || this.historyItems.length === 0) {
+      this.historyList.innerHTML = '<div class="no-history"><i class="fa fa-info-circle"></i> 暂无历史记录</div>';
       return;
     }
     
@@ -116,7 +122,7 @@ window.caseConverterHistory = {
           </div>
           <div class="history-item-actions">
             <button class="btn btn-sm history-use-btn" data-id="${item.id}">使用</button>
-            <button class="btn btn-sm btn-danger history-delete-btn" data-id="${item.id}">删除</button>
+            <button class="btn btn-sm btn-outline history-delete-btn" data-id="${item.id}">删除</button>
           </div>
         </div>
       `;
@@ -125,47 +131,57 @@ window.caseConverterHistory = {
     this.historyList.innerHTML = html;
     
     // 添加历史记录项事件
-    this.historyList.querySelectorAll('.history-use-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = parseInt(btn.getAttribute('data-id'));
-        const item = this.historyItems.find(h => h.id === id);
-        
-        if (item) {
-          const inputTextarea = this.container.querySelector('#case-input');
-          const outputTextarea = this.container.querySelector('#case-output');
+    const useButtons = this.historyList.querySelectorAll('.history-use-btn');
+    if (useButtons && useButtons.length) {
+      useButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = parseInt(btn.getAttribute('data-id'), 10);
+          const item = this.historyItems.find(h => h.id === id);
           
-          if (inputTextarea && outputTextarea) {
-            inputTextarea.value = item.fullInput;
-            outputTextarea.value = item.fullOutput;
+          if (item) {
+            const inputTextarea = this.container.querySelector('#case-input');
+            const outputTextarea = this.container.querySelector('#case-output');
             
-            // 更新统计信息
-            const charCount = this.container.querySelector('#char-count');
-            const wordCount = this.container.querySelector('#word-count');
-            const lineCount = this.container.querySelector('#line-count');
-            const outputCharCount = this.container.querySelector('#output-char-count');
-            const outputWordCount = this.container.querySelector('#output-word-count');
-            const outputLineCount = this.container.querySelector('#output-line-count');
-            
-            if (charCount && wordCount && lineCount && outputCharCount && outputWordCount && outputLineCount) {
-              this.utils.updateTextStats(inputTextarea, charCount, wordCount, lineCount);
-              this.utils.updateTextStats(outputTextarea, outputCharCount, outputWordCount, outputLineCount);
+            if (inputTextarea && outputTextarea) {
+              inputTextarea.value = item.fullInput;
+              outputTextarea.value = item.fullOutput;
+              
+              // 更新统计信息
+              const charCount = this.container.querySelector('#char-count');
+              const wordCount = this.container.querySelector('#word-count');
+              const lineCount = this.container.querySelector('#line-count');
+              const outputCharCount = this.container.querySelector('#output-char-count');
+              const outputWordCount = this.container.querySelector('#output-word-count');
+              const outputLineCount = this.container.querySelector('#output-line-count');
+              
+              if (this.utils && typeof this.utils.updateTextStats === 'function') {
+                this.utils.updateTextStats(inputTextarea, charCount, wordCount, lineCount);
+                this.utils.updateTextStats(outputTextarea, outputCharCount, outputWordCount, outputLineCount);
+              }
             }
           }
-        }
+        });
       });
-    });
+    }
     
-    this.historyList.querySelectorAll('.history-delete-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = parseInt(btn.getAttribute('data-id'));
-        this.historyItems = this.historyItems.filter(h => h.id !== id);
-        
-        // 保存到本地存储
-        localStorage.setItem('caseConverterHistory', JSON.stringify(this.historyItems));
-        
-        // 更新历史记录显示
-        this.renderHistory();
+    const deleteButtons = this.historyList.querySelectorAll('.history-delete-btn');
+    if (deleteButtons && deleteButtons.length) {
+      deleteButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = parseInt(btn.getAttribute('data-id'), 10);
+          this.historyItems = this.historyItems.filter(h => h.id !== id);
+          
+          // 保存到本地存储
+          try {
+            localStorage.setItem('caseConverterHistory', JSON.stringify(this.historyItems));
+          } catch (error) {
+            console.error('保存历史记录失败:', error);
+          }
+          
+          // 更新历史记录显示
+          this.renderHistory();
+        });
       });
-    });
+    }
   }
 };

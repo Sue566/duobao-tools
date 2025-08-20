@@ -67,12 +67,14 @@ window.caseConverterCore = {
     // 输入文本事件
     if (this.inputTextarea) {
       this.inputTextarea.addEventListener('input', () => {
-        this.utils.updateTextStats(
-          this.inputTextarea, 
-          this.charCount, 
-          this.wordCount, 
-          this.lineCount
-        );
+        if (this.utils && typeof this.utils.updateTextStats === 'function') {
+          this.utils.updateTextStats(
+            this.inputTextarea, 
+            this.charCount, 
+            this.wordCount, 
+            this.lineCount
+          );
+        }
       });
     }
     
@@ -91,94 +93,98 @@ window.caseConverterCore = {
     
     if (this.toTitleBtn) {
       this.toTitleBtn.addEventListener('click', () => {
-        this.transformText(this.toTitleCase, '首字母大写');
+        this.transformText(this.toTitleCase.bind(this), '首字母大写');
       });
     }
     
     if (this.toSentenceBtn) {
       this.toSentenceBtn.addEventListener('click', () => {
-        this.transformText(this.toSentenceCase, '句首大写');
+        this.transformText(this.toSentenceCase.bind(this), '句首大写');
       });
     }
     
     if (this.toToggleBtn) {
       this.toToggleBtn.addEventListener('click', () => {
-        this.transformText(this.toggleCase, '大小写互换');
+        this.transformText(this.toggleCase.bind(this), '大小写互换');
       });
     }
     
     // 编程风格按钮事件
     if (this.toCamelBtn) {
       this.toCamelBtn.addEventListener('click', () => {
-        this.transformText(this.toCamelCase, '驼峰命名');
+        this.transformText(this.toCamelCase.bind(this), '驼峰命名');
       });
     }
     
     if (this.toPascalBtn) {
       this.toPascalBtn.addEventListener('click', () => {
-        this.transformText(this.toPascalCase, '帕斯卡命名');
+        this.transformText(this.toPascalCase.bind(this), '帕斯卡命名');
       });
     }
     
     if (this.toSnakeBtn) {
       this.toSnakeBtn.addEventListener('click', () => {
-        this.transformText(this.toSnakeCase, '蛇形命名');
+        this.transformText(this.toSnakeCase.bind(this), '蛇形命名');
       });
     }
     
     if (this.toKebabBtn) {
       this.toKebabBtn.addEventListener('click', () => {
-        this.transformText(this.toKebabCase, '短横线命名');
+        this.transformText(this.toKebabCase.bind(this), '短横线命名');
       });
     }
     
     if (this.toConstantBtn) {
       this.toConstantBtn.addEventListener('click', () => {
-        this.transformText(this.toConstantCase, '常量命名');
+        this.transformText(this.toConstantCase.bind(this), '常量命名');
       });
     }
     
     // 特殊处理按钮事件
     if (this.removeSpacesBtn) {
       this.removeSpacesBtn.addEventListener('click', () => {
-        this.transformText(this.removeAllSpaces, '移除空格');
+        this.transformText(this.removeAllSpaces.bind(this), '移除空格');
       });
     }
     
     if (this.trimLinesBtn) {
       this.trimLinesBtn.addEventListener('click', () => {
-        this.transformText(this.trimLines, '修剪行首尾空格');
+        this.transformText(this.trimLines.bind(this), '修剪行首尾空格');
       });
     }
     
     if (this.removeEmptyLinesBtn) {
       this.removeEmptyLinesBtn.addEventListener('click', () => {
-        this.transformText(this.removeEmptyLines, '移除空行');
+        this.transformText(this.removeEmptyLines.bind(this), '移除空行');
       });
     }
     
     if (this.addLineNumbersBtn) {
       this.addLineNumbersBtn.addEventListener('click', () => {
-        this.transformText(this.addLineNumbers, '添加行号');
+        this.transformText(this.addLineNumbers.bind(this), '添加行号');
       });
     }
     
     if (this.sortLinesBtn) {
       this.sortLinesBtn.addEventListener('click', () => {
-        this.transformText(this.sortLines, '行排序');
+        this.transformText(this.sortLines.bind(this), '行排序');
       });
     }
     
     // 操作按钮事件
     if (this.clearInputBtn) {
       this.clearInputBtn.addEventListener('click', () => {
-        this.inputTextarea.value = '';
-        this.utils.updateTextStats(
-          this.inputTextarea, 
-          this.charCount, 
-          this.wordCount, 
-          this.lineCount
-        );
+        if (this.inputTextarea) {
+          this.inputTextarea.value = '';
+          if (this.utils && typeof this.utils.updateTextStats === 'function') {
+            this.utils.updateTextStats(
+              this.inputTextarea, 
+              this.charCount, 
+              this.wordCount, 
+              this.lineCount
+            );
+          }
+        }
       });
     }
     
@@ -186,42 +192,70 @@ window.caseConverterCore = {
       this.pasteInputBtn.addEventListener('click', async () => {
         try {
           const text = await navigator.clipboard.readText();
-          this.inputTextarea.value = text;
-          this.utils.updateTextStats(
-            this.inputTextarea, 
-            this.charCount, 
-            this.wordCount, 
-            this.lineCount
-          );
+          if (this.inputTextarea) {
+            this.inputTextarea.value = text;
+            if (this.utils && typeof this.utils.updateTextStats === 'function') {
+              this.utils.updateTextStats(
+                this.inputTextarea, 
+                this.charCount, 
+                this.wordCount, 
+                this.lineCount
+              );
+            }
+          }
         } catch (error) {
-          this.utils.showToast('无法访问剪贴板', 'error');
+          if (this.utils && typeof this.utils.showToast === 'function') {
+            this.utils.showToast('无法访问剪贴板', 'error');
+          } else {
+            console.error('无法访问剪贴板:', error);
+          }
         }
       });
     }
     
     if (this.copyOutputBtn) {
       this.copyOutputBtn.addEventListener('click', () => {
-        const outputText = this.outputTextarea.value;
-        
-        if (!outputText) {
-          this.utils.showToast('没有可复制的内容', 'warning');
-          return;
+        if (this.outputTextarea) {
+          const outputText = this.outputTextarea.value;
+          
+          if (!outputText) {
+            if (this.utils && typeof this.utils.showToast === 'function') {
+              this.utils.showToast('没有可复制的内容', 'warning');
+            }
+            return;
+          }
+          
+          if (this.utils && typeof this.utils.copyToClipboard === 'function') {
+            this.utils.copyToClipboard(outputText);
+          } else {
+            navigator.clipboard.writeText(outputText)
+              .then(() => {
+                console.log('已复制到剪贴板');
+              })
+              .catch(err => {
+                console.error('复制失败:', err);
+              });
+          }
         }
-        
-        this.utils.copyToClipboard(outputText);
       });
     }
     
     if (this.saveOutputBtn) {
       this.saveOutputBtn.addEventListener('click', () => {
-        const outputText = this.outputTextarea.value;
-        
-        if (!outputText) {
-          this.utils.showToast('没有可保存的内容', 'warning');
-          return;
+        if (this.outputTextarea) {
+          const outputText = this.outputTextarea.value;
+          
+          if (!outputText) {
+            if (this.utils && typeof this.utils.showToast === 'function') {
+              this.utils.showToast('没有可保存的内容', 'warning');
+            }
+            return;
+          }
+          
+          if (this.utils && typeof this.utils.saveToFile === 'function') {
+            this.utils.saveToFile(outputText, 'text_conversion.txt');
+          }
         }
-        
-        this.utils.saveToFile(outputText, 'text_conversion.txt');
       });
     }
   },
@@ -232,27 +266,41 @@ window.caseConverterCore = {
    * @param {string} operationName - 操作名称
    */
   transformText: function(transformFn, operationName) {
+    if (!this.inputTextarea || !this.outputTextarea) {
+      return;
+    }
+    
     const inputText = this.inputTextarea.value;
     
     if (!inputText) {
-      this.utils.showToast('请先输入文本', 'warning');
+      if (this.utils && typeof this.utils.showToast === 'function') {
+        this.utils.showToast('请先输入文本', 'warning');
+      }
       return;
     }
     
     try {
       const result = transformFn(inputText);
       this.outputTextarea.value = result;
-      this.utils.updateTextStats(
-        this.outputTextarea, 
-        this.outputCharCount, 
-        this.outputWordCount, 
-        this.outputLineCount
-      );
+      
+      if (this.utils && typeof this.utils.updateTextStats === 'function') {
+        this.utils.updateTextStats(
+          this.outputTextarea, 
+          this.outputCharCount, 
+          this.outputWordCount, 
+          this.outputLineCount
+        );
+      }
       
       // 保存到历史记录
-      this.history.saveToHistory(operationName, inputText, result);
+      if (this.history && typeof this.history.saveToHistory === 'function') {
+        this.history.saveToHistory(operationName, inputText, result);
+      }
     } catch (error) {
-      this.utils.showToast(`转换失败: ${error.message}`, 'error');
+      console.error('转换失败:', error);
+      if (this.utils && typeof this.utils.showToast === 'function') {
+        this.utils.showToast(`转换失败: ${error.message}`, 'error');
+      }
     }
   },
   
@@ -262,7 +310,7 @@ window.caseConverterCore = {
    * @returns {string} 转换后的文本
    */
   toTitleCase: function(text) {
-    return text.replace(/\b\w+/g, word => {
+    return text.replace(/\b\w+/g, function(word) {
       return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     });
   },
@@ -273,7 +321,7 @@ window.caseConverterCore = {
    * @returns {string} 转换后的文本
    */
   toSentenceCase: function(text) {
-    return text.replace(/(^\s*|[.!?]\s+)([a-z])/g, (match, p1, p2) => {
+    return text.replace(/(^\s*|[.!?]\s+)([a-z])/g, function(match, p1, p2) {
       return p1 + p2.toUpperCase();
     });
   },
@@ -284,7 +332,7 @@ window.caseConverterCore = {
    * @returns {string} 转换后的文本
    */
   toggleCase: function(text) {
-    return text.split('').map(char => {
+    return text.split('').map(function(char) {
       if (char === char.toUpperCase()) {
         return char.toLowerCase();
       } else {
@@ -300,8 +348,8 @@ window.caseConverterCore = {
    */
   toCamelCase: function(text) {
     return text
-      .replace(/[\s_-]+(.)/g, (_, c) => c.toUpperCase())
-      .replace(/^[A-Z]/, c => c.toLowerCase())
+      .replace(/[\s_-]+(.)/g, function(_, c) { return c.toUpperCase(); })
+      .replace(/^[A-Z]/, function(c) { return c.toLowerCase(); })
       .replace(/[^\w]/g, '');
   },
   
@@ -312,8 +360,8 @@ window.caseConverterCore = {
    */
   toPascalCase: function(text) {
     return text
-      .replace(/[\s_-]+(.)/g, (_, c) => c.toUpperCase())
-      .replace(/^[a-z]/, c => c.toUpperCase())
+      .replace(/[\s_-]+(.)/g, function(_, c) { return c.toUpperCase(); })
+      .replace(/^[a-z]/, function(c) { return c.toUpperCase(); })
       .replace(/[^\w]/g, '');
   },
   
@@ -374,7 +422,9 @@ window.caseConverterCore = {
    * @returns {string} 转换后的文本
    */
   trimLines: function(text) {
-    return text.split('\n').map(line => line.trim()).join('\n');
+    return text.split('\n').map(function(line) { 
+      return line.trim(); 
+    }).join('\n');
   },
   
   /**
@@ -383,7 +433,9 @@ window.caseConverterCore = {
    * @returns {string} 转换后的文本
    */
   removeEmptyLines: function(text) {
-    return text.split('\n').filter(line => line.trim() !== '').join('\n');
+    return text.split('\n').filter(function(line) { 
+      return line.trim() !== ''; 
+    }).join('\n');
   },
   
   /**
@@ -395,7 +447,7 @@ window.caseConverterCore = {
     const lines = text.split('\n');
     const digitCount = String(lines.length).length;
     
-    return lines.map((line, index) => {
+    return lines.map(function(line, index) {
       const lineNumber = String(index + 1).padStart(digitCount, '0');
       return `${lineNumber}: ${line}`;
     }).join('\n');

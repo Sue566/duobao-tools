@@ -1,23 +1,57 @@
+/**
+ * 多宝工具箱 - URL编码/解码工具
+ * 主入口文件
+ */
+
+// 主工具对象
+window.tools = window.tools || {};
 window.tools.urlEncoder = {
-  render(target) {
-    target.innerHTML = `
-      <h2>URL 编码/解码</h2>
-      <textarea id="url-input" placeholder="输入文本"></textarea>
-      <div class="buttons">
-        <button onclick="encodeURL()">编码</button>
-        <button onclick="decodeURL()">解码</button>
-      </div>
-      <textarea id="url-output" placeholder="结果" readonly></textarea>
-    `;
+  /**
+   * 渲染工具
+   * @param {HTMLElement} target - 目标容器
+   * @returns {Promise} 渲染完成的Promise
+   */
+  render: async function(target) {
+    try {
+      // 动态加载脚本
+      await this.loadScript('tools/urlEncoder/index.js');
+      
+      // 初始化工具
+      if (window.tools.urlEncoder && window.tools.urlEncoder._internalTool) {
+        return window.tools.urlEncoder._internalTool.render(target);
+      } else {
+        throw new Error('工具模块加载失败');
+      }
+    } catch (error) {
+      console.error('加载URL编码/解码工具失败:', error);
+      target.innerHTML = `
+        <div class="error-message" style="padding: 20px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">工具加载失败</h3>
+          <p>加载URL编码/解码工具时发生错误，请刷新页面重试。</p>
+          <p>错误详情: ${error.message}</p>
+        </div>
+      `;
+    }
+  },
+  
+  /**
+   * 加载脚本
+   * @param {string} src - 脚本路径
+   * @returns {Promise} 加载完成的Promise
+   */
+  loadScript: function(src) {
+    return new Promise((resolve, reject) => {
+      // 检查脚本是否已加载
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve();
+        return;
+      }
+      
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
   }
-};
-
-window.encodeURL = function() {
-  const val = document.getElementById('url-input').value;
-  document.getElementById('url-output').value = encodeURIComponent(val);
-};
-
-window.decodeURL = function() {
-  const val = document.getElementById('url-input').value;
-  document.getElementById('url-output').value = decodeURIComponent(val);
 };

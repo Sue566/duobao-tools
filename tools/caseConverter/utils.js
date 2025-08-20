@@ -66,7 +66,11 @@ window.caseConverterUtils = {
    * @param {HTMLElement} lineCount - 行数显示元素
    */
   updateTextStats: function(textarea, charCount, wordCount, lineCount) {
-    const text = textarea.value;
+    if (!textarea || !charCount || !wordCount || !lineCount) {
+      return;
+    }
+    
+    const text = textarea.value || '';
     
     // 字符数
     charCount.textContent = text.length;

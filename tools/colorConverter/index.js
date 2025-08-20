@@ -12,22 +12,30 @@
     ui: {}
   };
   
-  // 初始化函数
-  function init() {
-    // 获取工具容器
-    const container = document.querySelector('.color-converter-container');
-    if (!container) return;
-    
-    // 初始化UI
-    window.colorConverter.ui.initUI(container);
-    
-    console.log('颜色转换工具初始化完成');
-  }
+  // 工具模块
+  const tool = {
+    render: function(container) {
+      // 初始化UI
+      window.colorConverter.ui.initUI(container);
+      
+      console.log('颜色转换工具初始化完成');
+    }
+  };
   
-  // 页面加载完成后初始化
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+  // 将工具对象暴露给主模块
+  if (window.tools && window.tools.colorConverter) {
+    // 如果主模块已经存在，则扩展它
+    Object.assign(window.tools.colorConverter, {
+      _internalTool: tool
+    });
   } else {
-    init();
+    // 如果主模块不存在，则创建它
+    window.tools = window.tools || {};
+    window.tools.colorConverter = {
+      _internalTool: tool,
+      render: function(container) {
+        return tool.render(container);
+      }
+    };
   }
 })();

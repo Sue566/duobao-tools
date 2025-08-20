@@ -1096,8 +1096,8 @@ window.DuobaoString = {
   removeEmojis: function(str) {
     if (!str || typeof str !== 'string') return str;
     
-    // 简单的表情符号范围，不是完整的
-    return str.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+    // 简单的表情符号范围
+    return str.replace(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/g, '');
   },
   
   // 将文本转换为去除控制字符
@@ -2239,4 +2239,41 @@ window.DuobaoString = {
   
   // 检查字符串是否为有效的ISBN
   isIsbn: function(str) {
-    if (!str || typeof str !== 'string
+    if (!str || typeof str !== 'string') return false;
+    
+    // 移除所有连字符和空格
+    const sanitized = str.replace(/[\s-]/g, '');
+    
+    // ISBN-10
+    if (sanitized.length === 10) {
+      if (!/^\d{9}[\dX]$/i.test(sanitized)) {
+        return false;
+      }
+      
+      // 验证校验位
+      let sum = 0;
+      for (let i = 0; i < 9; i++) {
+        sum += parseInt(sanitized[i], 10) * (10 - i);
+      }
+      
+      const checkDigit = sanitized[9].toUpperCase() === 'X' ? 10 : parseInt(sanitized[9], 10);
+      return (sum + checkDigit) % 11 === 0;
+    }
+    
+    // ISBN-13
+    if (sanitized.length === 13) {
+      if (!/^\d{13}$/.test(sanitized)) {
+        return false;
+      }
+      
+      // 验证校验位
+      let sum = 0;
+      for (let i = 0; i < 12; i++) {
+        sum += parseInt(sanitized[i], 10) * (i % 2 === 0 ? 1 : 3);
+      }
+      
+      const checkDigit = (10 - (sum % 10)) % 10;
+      return parseInt(sanitized[12], 10) === checkDigit;
+    }
+    
+    return false;
