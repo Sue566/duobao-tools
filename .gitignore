@@ -1,0 +1,10 @@
+.DS_Store
+.env
+
+# 构建产物
+/dist/
+
+# 测试覆盖率等临时文件
+coverage/
+.tmp/
+.idea/
